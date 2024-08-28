@@ -4,9 +4,11 @@ import MeasureRepository from '../repositories/measure-repository';
 import { BadRequestResponse } from '../utils/http-responses/bad-request-response';
 import { ConflictResponse } from '../utils/http-responses/conflict-response';
 import { OkResponse } from '../utils/http-responses/ok-response';
+import { imagebase64 } from '../utils/image-base-64';
 import { MeasureType } from '../utils/measure-types';
 import { MeasureUtils } from '../utils/measure-utils';
 import { CustomerService } from './customer-service';
+import { run } from './gemini-service';
 
 type MeasureData = {
     image: string;
@@ -22,6 +24,7 @@ export default class MeasureService {
 
     async createMeasure(measureData: MeasureData): Promise<HttpResponseBase> {
         const validation = MeasureUtils.validateMeasureData(measureData);
+        const result = await run(imagebase64)
 
         if (!validation.isValid) {
             return new BadRequestResponse(validation.error!.code, validation.error!.description);
@@ -53,12 +56,15 @@ export default class MeasureService {
             customer_code: measureData.customer_code,
             measure_datetime: measureDate,
             measure_type: measureData.measure_type,
-            image_url: measureData.image,
+            image_url: result.imageUrl,
             has_confirmed: false
         });
 
+        console.log(newMeasure)
+
         const responseBody = {
             image_url: newMeasure.image_url,
+            measure_value: parseInt(result.text),
             measure_uuid: newMeasure.id
         };
 

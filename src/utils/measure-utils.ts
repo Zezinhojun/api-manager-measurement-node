@@ -8,13 +8,6 @@ export class MeasureUtils {
         MeasureType.GAS
     ];
 
-    private static isBase64(str: string): boolean {
-        try {
-            return btoa(atob(str)) === str;
-        } catch (err) {
-            return false;
-        }
-    }
 
     public static validateMeasureData(measureData: {
         image: string;
@@ -24,11 +17,8 @@ export class MeasureUtils {
     }): { isValid: boolean; error?: { code: string; description: string } } {
         const { image, customer_code, measure_datetime, measure_type } = measureData;
 
-        const isImageBase64 = MeasureUtils.isBase64(image);
+        ;
 
-        if (!image || !isImageBase64) {
-            return { isValid: false, error: { code: "INVALID_DATA", description: "Imagem em formato base64 inválida." } };
-        }
         if (!customer_code) {
             return { isValid: false, error: { code: "INVALID_DATA", description: "Código do cliente não fornecido." } };
         }

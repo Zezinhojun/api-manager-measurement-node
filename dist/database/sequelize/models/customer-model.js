@@ -30,6 +30,7 @@ var import_sequelize = require("sequelize");
 var sequelize = new import_sequelize.Sequelize({
   dialect: "postgres",
   host: "postgres",
+  // localhost if out container, postgres in container
   port: 5432,
   database: "mydatabase",
   username: "myuser",
@@ -40,6 +41,8 @@ var sequelize_instance_default = sequelize;
 
 // src/database/sequelize/models/customer-model.ts
 var Customer = class extends import_sequelize2.Model {
+  id;
+  customer_code;
 };
 Customer.init({
   id: {

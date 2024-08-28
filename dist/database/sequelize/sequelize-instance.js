@@ -27,6 +27,7 @@ var import_sequelize = require("sequelize");
 var sequelize = new import_sequelize.Sequelize({
   dialect: "postgres",
   host: "postgres",
+  // localhost if out container, postgres in container
   port: 5432,
   database: "mydatabase",
   username: "myuser",

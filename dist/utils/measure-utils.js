@@ -23,20 +23,14 @@ __export(measure_utils_exports, {
   MeasureUtils: () => MeasureUtils
 });
 module.exports = __toCommonJS(measure_utils_exports);
-var _MeasureUtils = class _MeasureUtils {
-  static isBase64(str) {
-    try {
-      return btoa(atob(str)) === str;
-    } catch (err) {
-      return false;
-    }
-  }
+var MeasureUtils = class _MeasureUtils {
+  static validMeasureTypes = [
+    "WATER" /* WATER */,
+    "GAS" /* GAS */
+  ];
   static validateMeasureData(measureData) {
     const { image, customer_code, measure_datetime, measure_type } = measureData;
-    const isImageBase64 = _MeasureUtils.isBase64(image);
-    if (!image || !isImageBase64) {
-      return { isValid: false, error: { code: "INVALID_DATA", description: "Imagem em formato base64 inv\xE1lida." } };
-    }
+    ;
     if (!customer_code) {
       return { isValid: false, error: { code: "INVALID_DATA", description: "C\xF3digo do cliente n\xE3o fornecido." } };
     }
@@ -59,11 +53,6 @@ var _MeasureUtils = class _MeasureUtils {
     });
   }
 };
-_MeasureUtils.validMeasureTypes = [
-  "WATER" /* WATER */,
-  "GAS" /* GAS */
-];
-var MeasureUtils = _MeasureUtils;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   MeasureUtils

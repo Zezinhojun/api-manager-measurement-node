@@ -16,26 +16,6 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
 
 // src/controllers/measure-controller.ts
 var measure_controller_exports = {};
@@ -47,12 +27,10 @@ var MeasureController = class {
   constructor(measureService) {
     this.measureService = measureService;
   }
-  createMeasure(req, res) {
-    return __async(this, null, function* () {
-      const measureData = req.body;
-      const httpResponse = yield this.measureService.createMeasure(measureData);
-      res.status(httpResponse.statusCode).json(httpResponse.body);
-    });
+  async createMeasure(req, res) {
+    const measureData = req.body;
+    const httpResponse = await this.measureService.createMeasure(measureData);
+    res.status(httpResponse.statusCode).json(httpResponse.body);
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

@@ -39,7 +39,9 @@ services:
       - redis
     volumes:
       - .:/app
+      - image_storage:/app/images
 
 volumes:
   postgres_data:
   redis_data:
+  image_storage:

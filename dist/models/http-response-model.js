@@ -24,6 +24,8 @@ __export(http_response_model_exports, {
 });
 module.exports = __toCommonJS(http_response_model_exports);
 var HttpResponseBase = class {
+  statusCode;
+  body;
   constructor(statusCode, body) {
     this.statusCode = statusCode;
     this.body = body;

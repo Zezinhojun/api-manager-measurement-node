@@ -16,26 +16,6 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
 
 // src/controllers/customer-controller.ts
 var customer_controller_exports = {};
@@ -50,17 +30,13 @@ var CustomerController = class _CustomerController {
   static build(customerService) {
     return new _CustomerController(customerService);
   }
-  getCustomerByCode(req, res) {
-    return __async(this, null, function* () {
-      const { customerCode } = req.params;
-      const httpResponse = yield this.customerService.getCustomerByCode(customerCode);
-      res.status(httpResponse.statusCode).json(httpResponse.body);
-    });
+  async getCustomerByCode(req, res) {
+    const { customerCode } = req.params;
+    const httpResponse = await this.customerService.getCustomerByCode(customerCode);
+    res.status(httpResponse.statusCode).json(httpResponse.body);
   }
-  getCustomers(req, res) {
-    return __async(this, null, function* () {
-      const httpResponse = yield this.customerService.getAllCustomers();
-      res.status(httpResponse.statusCode).json(httpResponse.body);
-    });
+  async getCustomers(req, res) {
+    const httpResponse = await this.customerService.getAllCustomers();
+    res.status(httpResponse.statusCode).json(httpResponse.body);
   }
 };

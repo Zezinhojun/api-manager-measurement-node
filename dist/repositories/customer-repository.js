@@ -16,26 +16,6 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
 
 // src/repositories/customer-repository.ts
 var customer_repository_exports = {};
@@ -52,6 +32,7 @@ var import_sequelize = require("sequelize");
 var sequelize = new import_sequelize.Sequelize({
   dialect: "postgres",
   host: "postgres",
+  // localhost if out container, postgres in container
   port: 5432,
   database: "mydatabase",
   username: "myuser",
@@ -62,6 +43,8 @@ var sequelize_instance_default = sequelize;
 
 // src/database/sequelize/models/customer-model.ts
 var Customer = class extends import_sequelize2.Model {
+  id;
+  customer_code;
 };
 Customer.init({
   id: {
@@ -84,19 +67,13 @@ var customer_model_default = Customer;
 
 // src/repositories/customer-repository.ts
 var CustomerRepository = class {
-  findCustomerByCode(customerCode) {
-    return __async(this, null, function* () {
-      return customer_model_default.findOne({ where: { customer_code: customerCode } });
-    });
+  async findCustomerByCode(customerCode) {
+    return customer_model_default.findOne({ where: { customer_code: customerCode } });
   }
-  findAllCustomers() {
-    return __async(this, null, function* () {
-      return customer_model_default.findAll();
-    });
+  async findAllCustomers() {
+    return customer_model_default.findAll();
   }
-  createCustomer(customerData) {
-    return __async(this, null, function* () {
-      return yield customer_model_default.create(customerData);
-    });
+  async createCustomer(customerData) {
+    return await customer_model_default.create(customerData);
   }
 };
