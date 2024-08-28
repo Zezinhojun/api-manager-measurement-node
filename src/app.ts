@@ -6,5 +6,6 @@ export const createApp = () => {
     app.use(json());
     app.use("/", router);
 
+
     return app;
 };
