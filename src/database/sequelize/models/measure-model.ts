@@ -4,7 +4,7 @@ import Customer from './customer-model';
 import { MeasureType } from '../../../utils/measure-types';
 
 export interface MeasureAttributes {
-    id: number;
+    id: string;
     measure_datetime: Date;
     measure_type: MeasureType;
     image_url: string;
@@ -15,7 +15,7 @@ export interface MeasureAttributes {
 interface MeasureCreationAttributes extends Optional<MeasureAttributes, 'id'> { }
 
 class Measure extends Model<MeasureAttributes, MeasureCreationAttributes> implements MeasureAttributes {
-    public get id(): number {
+    public get id(): string {
         return this.getDataValue('id');
     }
     public get measure_datetime(): Date {
@@ -37,9 +37,12 @@ class Measure extends Model<MeasureAttributes, MeasureCreationAttributes> implem
 
 Measure.init({
     id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
+        type: DataTypes.STRING,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
+        validate: {
+            isUUID: 4,
+        },
     },
     measure_datetime: {
         type: DataTypes.DATE,

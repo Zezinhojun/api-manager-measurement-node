@@ -17,22 +17,13 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/middlewares/validate-measure-data.ts
-var validate_measure_data_exports = {};
-__export(validate_measure_data_exports, {
-  validateMeasureData: () => validateMeasureData
+// src/middlewares/confirm-validate.ts
+var confirm_validate_exports = {};
+__export(confirm_validate_exports, {
+  validateConfirmMeasure: () => validateConfirmMeasure
 });
-module.exports = __toCommonJS(validate_measure_data_exports);
+module.exports = __toCommonJS(confirm_validate_exports);
 var import_express_validator = require("express-validator");
-
-// src/utils/measure-types.ts
-var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
-  MeasureType2["WATER"] = "WATER";
-  MeasureType2["GAS"] = "GAS";
-  MeasureType2["ELECTRICITY"] = "ELECTRICITY";
-  MeasureType2["PHONE"] = "PHONE";
-  return MeasureType2;
-})(MeasureType || {});
 
 // src/models/http-response-model.ts
 var HttpResponseBase = class {
@@ -51,13 +42,16 @@ var BadRequestResponse = class extends HttpResponseBase {
   }
 };
 
-// src/middlewares/validate-measure-data.ts
-function validateMeasureData() {
+// src/middlewares/confirm-validate.ts
+function validateConfirmMeasure() {
   return [
-    (0, import_express_validator.body)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido."),
-    (0, import_express_validator.body)("measure_datetime").notEmpty().withMessage("Data da medida n\xE3o fornecida.").isISO8601().withMessage("Data da medida inv\xE1lida."),
-    (0, import_express_validator.body)("measure_type").notEmpty().withMessage("Tipo de medida n\xE3o fornecido.").isIn(Object.values(MeasureType)).withMessage("Tipo de medida inv\xE1lido."),
-    (0, import_express_validator.body)("image").notEmpty().withMessage("Imagem n\xE3o fornecida."),
+    (0, import_express_validator.body)("measure_uuid").notEmpty().withMessage("UUID da medida n\xE3o fornecido."),
+    (0, import_express_validator.body)("confirmed_value").notEmpty().withMessage("Valor confirmado n\xE3o fornecido.").bail().custom((value) => {
+      if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+        throw new Error("O valor confirmado deve ser um n\xFAmero inteiro positivo.");
+      }
+      return true;
+    }),
     (req, res, next) => {
       const errors = (0, import_express_validator.validationResult)(req);
       if (!errors.isEmpty()) {
@@ -71,5 +65,5 @@ function validateMeasureData() {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  validateMeasureData
+  validateConfirmMeasure
 });

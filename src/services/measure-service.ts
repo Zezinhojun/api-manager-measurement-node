@@ -44,7 +44,6 @@ export default class MeasureService {
         if (MeasureUtils.hasDuplicateMeasurementInCurrentMonth(existingMeasures, measureDate, measureData.measure_type)) {
             return new ConflictResponse("DOUBLE_REPORT", "Já existe uma leitura para este tipo no mês atual");
         }
-
         const result = await run(imagebase64)
 
         const newMeasure = await this.measureRepository.createMeasure({
@@ -63,14 +62,9 @@ export default class MeasureService {
 
         return new OkResponse("Operação realizada com sucesso", responseBody);
 
-
-
-
-
-
     }
 
-    async getMeasure(measureId: number) {
+    async getMeasure(measureId: string) {
         return this.measureRepository.findMeasureById(measureId)
     }
 
@@ -78,7 +72,22 @@ export default class MeasureService {
         return this.measureRepository.findMeasuresByCustomerCode(customerCode, measureType)
     }
 
-    async updateMeasure(measureId: number, updates: Partial<MeasureAttributes>) {
-        return this.measureRepository.updateMeasure(measureId, updates)
+
+
+    async updateMeasure(measureUuid: string, confirmedValue: number) {
+
+        const measure = await this.measureRepository.findMeasureById(measureUuid);
+
+        if (!measure) {
+            return new BadRequestResponse("MEASURE_NOT_FOUND", "Leitura não encontrada.");
+        }
+
+        if (measure.has_confirmed) {
+            return new ConflictResponse("CONFIRMATION_DUPLICATE", "Leitura do mês já realizada.");
+        }
+
+        await this.measureRepository.updateMeasure(measure.id, { has_confirmed: true });
+
+        return new OkResponse("Operação realizada com sucesso.", { success: true });
     }
 }

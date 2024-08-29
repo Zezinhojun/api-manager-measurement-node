@@ -91,9 +91,12 @@ var Measure = class extends import_sequelize3.Model {
 };
 Measure.init({
   id: {
-    type: import_sequelize3.DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
+    type: import_sequelize3.DataTypes.STRING,
+    defaultValue: import_sequelize3.DataTypes.UUIDV4,
+    primaryKey: true,
+    validate: {
+      isUUID: 4
+    }
   },
   measure_datetime: {
     type: import_sequelize3.DataTypes.DATE,

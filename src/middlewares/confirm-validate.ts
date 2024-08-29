@@ -1,16 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
-import { MeasureType } from '../utils/measure-types';
 import { BadRequestResponse } from '../utils/http-responses/bad-request-response';
 
-export function validateMeasureData() {
+export function validateConfirmMeasure() {
     return [
-        body('customer_code').notEmpty().withMessage('Código do cliente não fornecido.'),
-        body('measure_datetime').notEmpty().withMessage('Data da medida não fornecida.')
-            .isISO8601().withMessage('Data da medida inválida.'),
-        body('measure_type').notEmpty().withMessage('Tipo de medida não fornecido.')
-            .isIn(Object.values(MeasureType)).withMessage('Tipo de medida inválido.'),
-        body('image').notEmpty().withMessage('Imagem não fornecida.'),
+        body('measure_uuid').notEmpty().withMessage('UUID da medida não fornecido.'),
+        body('confirmed_value').notEmpty().withMessage('Valor confirmado não fornecido.')
+            .bail().custom(value => {
+                if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
+                    throw new Error('O valor confirmado deve ser um número inteiro positivo.');
+                }
+                return true;
+            }),
 
         (req: Request, res: Response, next: NextFunction) => {
             const errors = validationResult(req);

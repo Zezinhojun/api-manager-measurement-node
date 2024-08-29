@@ -55,7 +55,6 @@ async function run(base64) {
   const text = response.text();
   const imageFilename = "image_" + Date.now() + ".jpg";
   const imageUrl = await saveImage(base64, imageFilename);
-  console.log(imageUrl);
   return { text, imageUrl };
 }
 async function saveImage(base64Image, imageFilename) {

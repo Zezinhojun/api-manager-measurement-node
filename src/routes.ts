@@ -6,6 +6,7 @@ import MeasureRepository from "./repositories/measure-repository";
 import MeasureService from "./services/measure-service";
 import { MeasureController } from "./controllers/measure-controller";
 import { validateMeasureData } from "./middlewares/validate-measure-data";
+import { validateConfirmMeasure } from "./middlewares/confirm-validate";
 
 const customerRepository = new CustomerRepository()
 const customService = new CustomerService(customerRepository)
@@ -17,8 +18,6 @@ const measureController = new MeasureController(measureService)
 
 export const router = Router()
 
-router.post('/upload', validateMeasureData(), (req: Request, res: Response) => {
-    measureController.createMeasure(req, res);
-});
-
+router.post('/upload', validateMeasureData(), (req: Request, res: Response) => measureController.createMeasure(req, res));
+router.patch("/confirm", validateConfirmMeasure(), (req: Request, res: Response) => measureController.updateMeasure(req, res));
 router.get("/:customerCode/list", (req, res) => customerController.getCustomerByCode(req, res));

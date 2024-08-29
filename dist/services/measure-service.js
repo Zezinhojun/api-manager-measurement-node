@@ -124,7 +124,6 @@ async function run(base64) {
   const text = response.text();
   const imageFilename = "image_" + Date.now() + ".jpg";
   const imageUrl = await saveImage(base64, imageFilename);
-  console.log(imageUrl);
   return { text, imageUrl };
 }
 async function saveImage(base64Image, imageFilename) {
@@ -187,7 +186,15 @@ var MeasureService = class {
   async getMeasureByCustomer(customerCode, measureType) {
     return this.measureRepository.findMeasuresByCustomerCode(customerCode, measureType);
   }
-  async updateMeasure(measureId, updates) {
-    return this.measureRepository.updateMeasure(measureId, updates);
+  async updateMeasure(measureUuid, confirmedValue) {
+    const measure = await this.measureRepository.findMeasureById(measureUuid);
+    if (!measure) {
+      return new BadRequestResponse("MEASURE_NOT_FOUND", "Leitura n\xE3o encontrada.");
+    }
+    if (measure.has_confirmed) {
+      return new ConflictResponse("CONFIRMATION_DUPLICATE", "Leitura do m\xEAs j\xE1 realizada.");
+    }
+    await this.measureRepository.updateMeasure(measure.id, { has_confirmed: true });
+    return new OkResponse("Opera\xE7\xE3o realizada com sucesso.", { success: true });
   }
 };

@@ -42,9 +42,9 @@ var import_express = require("express");
 var HttpResponseBase = class {
   statusCode;
   body;
-  constructor(statusCode, body2) {
+  constructor(statusCode, body3) {
     this.statusCode = statusCode;
-    this.body = body2;
+    this.body = body3;
   }
 };
 
@@ -190,9 +190,12 @@ var Measure = class extends import_sequelize3.Model {
 };
 Measure.init({
   id: {
-    type: import_sequelize3.DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
+    type: import_sequelize3.DataTypes.STRING,
+    defaultValue: import_sequelize3.DataTypes.UUIDV4,
+    primaryKey: true,
+    validate: {
+      isUUID: 4
+    }
   },
   measure_datetime: {
     type: import_sequelize3.DataTypes.DATE,
@@ -345,7 +348,6 @@ async function run(base64) {
   const text = response.text();
   const imageFilename = "image_" + Date.now() + ".jpg";
   const imageUrl = await saveImage(base64, imageFilename);
-  console.log(imageUrl);
   return { text, imageUrl };
 }
 async function saveImage(base64Image, imageFilename) {
@@ -408,8 +410,16 @@ var MeasureService = class {
   async getMeasureByCustomer(customerCode, measureType) {
     return this.measureRepository.findMeasuresByCustomerCode(customerCode, measureType);
   }
-  async updateMeasure(measureId, updates) {
-    return this.measureRepository.updateMeasure(measureId, updates);
+  async updateMeasure(measureUuid, confirmedValue) {
+    const measure = await this.measureRepository.findMeasureById(measureUuid);
+    if (!measure) {
+      return new BadRequestResponse("MEASURE_NOT_FOUND", "Leitura n\xE3o encontrada.");
+    }
+    if (measure.has_confirmed) {
+      return new ConflictResponse("CONFIRMATION_DUPLICATE", "Leitura do m\xEAs j\xE1 realizada.");
+    }
+    await this.measureRepository.updateMeasure(measure.id, { has_confirmed: true });
+    return new OkResponse("Opera\xE7\xE3o realizada com sucesso.", { success: true });
   }
 };
 
@@ -421,6 +431,11 @@ var MeasureController = class {
   async createMeasure(req, res) {
     const measureData = req.body;
     const httpResponse = await this.measureService.createMeasure(measureData);
+    res.status(httpResponse.statusCode).json(httpResponse.body);
+  }
+  async updateMeasure(req, res) {
+    const { measure_uuid, confirmed_value } = req.body;
+    const httpResponse = await this.measureService.updateMeasure(measure_uuid, confirmed_value);
     res.status(httpResponse.statusCode).json(httpResponse.body);
   }
 };
@@ -437,10 +452,31 @@ function validateMeasureData() {
       const errors = (0, import_express_validator.validationResult)(req);
       if (!errors.isEmpty()) {
         const error = errors.array()[0];
-        return res.status(400).json({
-          error_code: "INVALID_DATA",
-          error_description: error.msg
-        });
+        const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg);
+        return res.status(httpResponse.statusCode).json(httpResponse.body);
+      }
+      next();
+    }
+  ];
+}
+
+// src/middlewares/confirm-validate.ts
+var import_express_validator2 = require("express-validator");
+function validateConfirmMeasure() {
+  return [
+    (0, import_express_validator2.body)("measure_uuid").notEmpty().withMessage("UUID da medida n\xE3o fornecido."),
+    (0, import_express_validator2.body)("confirmed_value").notEmpty().withMessage("Valor confirmado n\xE3o fornecido.").bail().custom((value) => {
+      if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+        throw new Error("O valor confirmado deve ser um n\xFAmero inteiro positivo.");
+      }
+      return true;
+    }),
+    (req, res, next) => {
+      const errors = (0, import_express_validator2.validationResult)(req);
+      if (!errors.isEmpty()) {
+        const error = errors.array()[0];
+        const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg);
+        return res.status(httpResponse.statusCode).json(httpResponse.body);
       }
       next();
     }
@@ -455,9 +491,8 @@ var measureRepository = new MeasureRepository();
 var measureService = new MeasureService(measureRepository, customService);
 var measureController = new MeasureController(measureService);
 var router = (0, import_express.Router)();
-router.post("/upload", validateMeasureData(), (req, res) => {
-  measureController.createMeasure(req, res);
-});
+router.post("/upload", validateMeasureData(), (req, res) => measureController.createMeasure(req, res));
+router.patch("/confirm", validateConfirmMeasure(), (req, res) => measureController.updateMeasure(req, res));
 router.get("/:customerCode/list", (req, res) => customerController.getCustomerByCode(req, res));
 
 // src/app.ts

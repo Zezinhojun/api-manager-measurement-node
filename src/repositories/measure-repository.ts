@@ -6,7 +6,7 @@ export default class MeasureRepository {
         return measure;
     }
 
-    async findMeasureById(measureId: number) {
+    async findMeasureById(measureId: string) {
         return Measure.findOne({ where: { id: measureId } });
     }
 
@@ -27,7 +27,7 @@ export default class MeasureRepository {
         });
     }
 
-    async updateMeasure(measureId: number, updates: Partial<MeasureAttributes>) {
+    async updateMeasure(measureId: string, updates: Partial<MeasureAttributes>) {
         const measure = await Measure.findOne({ where: { id: measureId } })
         if (measure) {
             return measure.update(updates);

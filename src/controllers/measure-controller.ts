@@ -9,4 +9,10 @@ export class MeasureController {
         const httpResponse = await this.measureService.createMeasure(measureData)
         res.status(httpResponse.statusCode).json(httpResponse.body);
     }
+
+    async updateMeasure(req: Request, res: Response) {
+        const { measure_uuid, confirmed_value } = req.body
+        const httpResponse = await this.measureService.updateMeasure(measure_uuid, confirmed_value)
+        res.status(httpResponse.statusCode).json(httpResponse.body);
+    }
 }
