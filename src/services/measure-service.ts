@@ -40,7 +40,7 @@ export default class MeasureService {
 
         const existingMeasures = await this.measureRepository.findMeasuresByCustomerCode(measureData.customer_code);
 
-        if (MeasureUtils.hasDuplicateMeasurementInCurrentMonth(existingMeasures, measureDate, measureData.measure_type)) {
+        if (MeasureUtils.hasDuplicateForDate(existingMeasures, measureDate, measureData.measure_type)) {
             return new ConflictResponse("DOUBLE_REPORT", "Já existe uma leitura para este tipo no mês atual");
         }
         const result = await run(imagebase64)
