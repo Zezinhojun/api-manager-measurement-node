@@ -1,7 +1,8 @@
-# Use a imagem oficial do Node.js
 FROM node:18-alpine
 
 WORKDIR /app
+
+RUN mkdir -p /app/images
 
 COPY package*.json ./
 

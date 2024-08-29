@@ -5,6 +5,10 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
@@ -21,61 +25,22 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/app.ts
-var import_express2 = __toESM(require("express"));
-
-// src/routes.ts
-var import_express = require("express");
-
-// src/controllers/customer-controller.ts
-var CustomerController = class _CustomerController {
-  constructor(customerService) {
-    this.customerService = customerService;
-  }
-  static build(customerService) {
-    return new _CustomerController(customerService);
-  }
-  async getCustomerByCode(req, res) {
-    const { customerCode } = req.params;
-    const httpResponse = await this.customerService.getCustomerByCode(customerCode);
-    res.status(httpResponse.statusCode).json(httpResponse.body);
-  }
-};
-
-// src/controllers/measure-controller.ts
-var MeasureController = class {
-  constructor(measureService2) {
-    this.measureService = measureService2;
-  }
-  async createMeasure(req, res) {
-    const measureData = req.body;
-    const httpResponse = await this.measureService.createMeasure(measureData);
-    res.status(httpResponse.statusCode).json(httpResponse.body);
-  }
-  async updateMeasure(req, res) {
-    const { measure_uuid, confirmed_value } = req.body;
-    const httpResponse = await this.measureService.updateMeasure(measure_uuid, confirmed_value);
-    res.status(httpResponse.statusCode).json(httpResponse.body);
-  }
-  async getMeasuresByCustomer(req, res) {
-    const { customer_code } = req.params;
-    const measure_type = req.query.measure_type;
-    const httpResponse = await this.measureService.getMeasuresByCustomer(customer_code, measure_type);
-    res.status(httpResponse.statusCode).json(httpResponse.body);
-  }
-};
-
-// src/middlewares/confirm-validate.ts
-var import_express_validator = require("express-validator");
+// src/services/measure-service.ts
+var measure_service_exports = {};
+__export(measure_service_exports, {
+  default: () => MeasureService
+});
+module.exports = __toCommonJS(measure_service_exports);
 
 // src/models/http-response-model.ts
 var HttpResponseBase = class {
   statusCode;
   body;
-  constructor(statusCode, body3) {
+  constructor(statusCode, body) {
     this.statusCode = statusCode;
-    this.body = body3;
+    this.body = body;
   }
 };
 
@@ -86,222 +51,10 @@ var BadRequestResponse = class extends HttpResponseBase {
   }
 };
 
-// src/middlewares/confirm-validate.ts
-var validateConfirmMeasure = () => {
-  return [
-    (0, import_express_validator.body)("measure_uuid").notEmpty().withMessage("UUID da medida n\xE3o fornecido."),
-    (0, import_express_validator.body)("confirmed_value").notEmpty().withMessage("Valor confirmado n\xE3o fornecido.").bail().custom((value) => {
-      if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
-        throw new Error("O valor confirmado deve ser um n\xFAmero inteiro positivo.");
-      }
-      return true;
-    }),
-    (req, res, next) => {
-      const errors = (0, import_express_validator.validationResult)(req);
-      if (!errors.isEmpty()) {
-        const error = errors.array()[0];
-        const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg);
-        return res.status(httpResponse.statusCode).json(httpResponse.body);
-      }
-      next();
-    }
-  ];
-};
-
-// src/middlewares/validate-measure-data.ts
-var import_express_validator2 = require("express-validator");
-
-// src/utils/measure-types.ts
-var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
-  MeasureType2["WATER"] = "WATER";
-  MeasureType2["GAS"] = "GAS";
-  return MeasureType2;
-})(MeasureType || {});
-
-// src/middlewares/validate-measure-data.ts
-function validateMeasureData() {
-  return [
-    (0, import_express_validator2.body)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
-    (0, import_express_validator2.body)("measure_datetime").notEmpty().withMessage("Data da medida n\xE3o fornecida.").isISO8601().withMessage("Data da medida inv\xE1lida."),
-    (0, import_express_validator2.body)("measure_type").notEmpty().withMessage("Tipo de medida n\xE3o fornecido.").isIn(Object.values(MeasureType)).withMessage("Tipo de medida inv\xE1lido."),
-    (0, import_express_validator2.body)("image").notEmpty().withMessage("Imagem n\xE3o fornecida."),
-    (req, res, next) => {
-      const errors = (0, import_express_validator2.validationResult)(req);
-      if (!errors.isEmpty()) {
-        const error = errors.array()[0];
-        const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg);
-        return res.status(httpResponse.statusCode).json(httpResponse.body);
-      }
-      next();
-    }
-  ];
-}
-
-// src/database/sequelize/models/customer-model.ts
-var import_sequelize2 = require("sequelize");
-
-// src/database/sequelize/sequelize-instance.ts
-var import_sequelize = require("sequelize");
-var sequelize = new import_sequelize.Sequelize({
-  dialect: "postgres",
-  host: "postgres",
-  // localhost if out container, postgres in container
-  port: 5432,
-  database: "mydatabase",
-  username: "myuser",
-  password: "mypassword",
-  logging: false
-});
-var sequelize_instance_default = sequelize;
-
-// src/database/sequelize/models/customer-model.ts
-var Customer = class extends import_sequelize2.Model {
-  get id() {
-    return this.getDataValue("id");
-  }
-  get customer_code() {
-    return this.getDataValue("customer_code");
-  }
-};
-Customer.init({
-  id: {
-    type: import_sequelize2.DataTypes.INTEGER,
-    autoIncrement: true
-  },
-  customer_code: {
-    type: import_sequelize2.DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-    primaryKey: true
-  }
-}, {
-  sequelize: sequelize_instance_default,
-  modelName: "Customer",
-  tableName: "customers",
-  timestamps: false
-});
-var customer_model_default = Customer;
-
-// src/repositories/customer-repository.ts
-var CustomerRepository = class {
-  async findCustomerByCode(customerCode) {
-    return customer_model_default.findOne({ where: { customer_code: customerCode } });
-  }
-  async findAllCustomers() {
-    return customer_model_default.findAll();
-  }
-  async createCustomer(customerData) {
-    return await customer_model_default.create(customerData);
-  }
-};
-
-// src/database/sequelize/models/measure-model.ts
-var import_sequelize3 = require("sequelize");
-var Measure = class extends import_sequelize3.Model {
-  get id() {
-    return this.getDataValue("id");
-  }
-  get measure_datetime() {
-    return this.getDataValue("measure_datetime");
-  }
-  get measure_type() {
-    return this.getDataValue("measure_type");
-  }
-  get image_url() {
-    return this.getDataValue("image_url");
-  }
-  get customer_code() {
-    return this.getDataValue("customer_code");
-  }
-  get has_confirmed() {
-    return this.getDataValue("has_confirmed");
-  }
-};
-Measure.init({
-  id: {
-    type: import_sequelize3.DataTypes.STRING,
-    defaultValue: import_sequelize3.DataTypes.UUIDV4,
-    primaryKey: true,
-    validate: {
-      isUUID: 4
-    }
-  },
-  measure_datetime: {
-    type: import_sequelize3.DataTypes.DATE,
-    allowNull: false
-  },
-  measure_type: {
-    type: import_sequelize3.DataTypes.STRING,
-    allowNull: false
-  },
-  image_url: {
-    type: import_sequelize3.DataTypes.STRING,
-    allowNull: false
-  },
-  customer_code: {
-    type: import_sequelize3.DataTypes.STRING,
-    allowNull: false,
-    references: {
-      model: "customers",
-      key: "customer_code"
-    }
-  },
-  has_confirmed: {
-    type: import_sequelize3.DataTypes.BOOLEAN,
-    defaultValue: false
-  }
-}, {
-  sequelize: sequelize_instance_default,
-  modelName: "Measure",
-  tableName: "measures",
-  timestamps: false,
-  createdAt: false,
-  updatedAt: false
-});
-Measure.belongsTo(customer_model_default, { foreignKey: "customer_code" });
-customer_model_default.hasMany(Measure, { foreignKey: "customer_code" });
-var measure_model_default = Measure;
-
-// src/repositories/measure-repository.ts
-var MeasureRepository = class {
-  async createMeasure(measureData) {
-    const measure = await measure_model_default.create(measureData);
-    return measure;
-  }
-  async findMeasureById(measureId) {
-    return measure_model_default.findOne({ where: { id: measureId } });
-  }
-  async findAllMeasures(customer_code, measure_type) {
-    const query2 = {};
-    if (customer_code) {
-      query2.where = { ...query2.where, customer_code };
-    }
-    if (measure_type) {
-      query2.where = { ...query2.where, measure_type: measure_type.toUpperCase() };
-    }
-    return measure_model_default.findAll(query2);
-  }
-  async findMeasuresByCustomerCode(customerCode, measureType) {
-    return measure_model_default.findAll({
-      where: {
-        customer_code: customerCode,
-        ...measureType ? { measure_type: measureType.toUpperCase() } : {}
-      }
-    });
-  }
-  async findMeasuresByType(measureType) {
-    return measure_model_default.findAll({
-      where: {
-        measure_type: measureType
-      }
-    });
-  }
-  async updateMeasure(measureId, updates) {
-    const measure = await measure_model_default.findOne({ where: { id: measureId } });
-    if (measure) {
-      return measure.update(updates);
-    }
-    throw new Error("Measure not found");
+// src/utils/http-responses/conflict-response.ts
+var ConflictResponse = class extends HttpResponseBase {
+  constructor(errorCode, errorDescription) {
+    super(409, { error_code: errorCode, error_description: errorDescription });
   }
 };
 
@@ -316,40 +69,6 @@ var NotFoundResponse = class extends HttpResponseBase {
 var OkResponse = class extends HttpResponseBase {
   constructor(message, data) {
     super(200, { message, data });
-  }
-};
-
-// src/services/customer-service.ts
-var CustomerService = class {
-  constructor(customerRepository2) {
-    this.customerRepository = customerRepository2;
-  }
-  async getCustomerByCode(customerCode) {
-    const customer = await this.customerRepository.findCustomerByCode(customerCode);
-    if (customer) {
-      return new OkResponse("Cliente encontrado", customer);
-    } else {
-      return new NotFoundResponse("CUSTOMER_NOT_FOUND", "Cliente n\xE3o encontrado");
-    }
-  }
-  async getAllCustomers() {
-    const customers = await this.customerRepository.findAllCustomers();
-    return new OkResponse("Clientes encontrados", customers);
-  }
-  async createCustomer(customerData) {
-    const existingCustomer = await this.customerRepository.findCustomerByCode(customerData.customer_code);
-    if (existingCustomer) {
-      return new OkResponse("Customer already there", existingCustomer);
-    }
-    const customer = await this.customerRepository.createCustomer(customerData);
-    return new OkResponse("Customer created", customer);
-  }
-};
-
-// src/utils/http-responses/conflict-response.ts
-var ConflictResponse = class extends HttpResponseBase {
-  constructor(errorCode, errorDescription) {
-    super(409, { error_code: errorCode, error_description: errorDescription });
   }
 };
 
@@ -414,8 +133,8 @@ async function saveImage(base64Image, imageFilename) {
 
 // src/services/measure-service.ts
 var MeasureService = class {
-  constructor(measureRepository2, customerService) {
-    this.measureRepository = measureRepository2;
+  constructor(measureRepository, customerService) {
+    this.measureRepository = measureRepository;
     this.customerService = customerService;
   }
   async createMeasure(measureData) {
@@ -485,76 +204,3 @@ var MeasureService = class {
     return new OkResponse("Opera\xE7\xE3o realizada com sucesso.", { success: true });
   }
 };
-
-// src/middlewares/validate-get-measures-by-customer.ts
-var import_express_validator3 = require("express-validator");
-var validateGetMeasuresByCustomer = () => {
-  return [
-    // Valida o código do cliente
-    (0, import_express_validator3.param)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
-    // Valida o parâmetro query measure_type
-    (0, import_express_validator3.query)("measure_type").optional().custom((value) => {
-      if (value) {
-        if (typeof value !== "string") {
-          throw new Error("Tipo de medi\xE7\xE3o deve ser uma string.");
-        }
-        const measureType = value.toUpperCase();
-        if (!Object.values(MeasureType).includes(measureType)) {
-          throw new Error("Tipo de medi\xE7\xE3o n\xE3o permitido.");
-        }
-      }
-      return true;
-    }),
-    // Middleware para processar os erros de validação
-    (req, res, next) => {
-      const errors = (0, import_express_validator3.validationResult)(req);
-      if (!errors.isEmpty()) {
-        const error = errors.array()[0];
-        const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg);
-        return res.status(httpResponse.statusCode).json(httpResponse.body);
-      }
-      next();
-    }
-  ];
-};
-
-// src/routes.ts
-var customerRepository = new CustomerRepository();
-var customService = new CustomerService(customerRepository);
-var customerController = new CustomerController(customService);
-var measureRepository = new MeasureRepository();
-var measureService = new MeasureService(measureRepository, customService);
-var measureController = new MeasureController(measureService);
-var router = (0, import_express.Router)();
-router.post("/upload", validateMeasureData(), (req, res) => measureController.createMeasure(req, res));
-router.patch("/confirm", validateConfirmMeasure(), (req, res) => measureController.updateMeasure(req, res));
-router.get("/:customer_code/list", validateGetMeasuresByCustomer(), (req, res) => measureController.getMeasuresByCustomer(req, res));
-
-// src/app.ts
-var createApp = () => {
-  const app2 = (0, import_express2.default)();
-  app2.use((0, import_express2.json)());
-  app2.use("/files", import_express2.default.static("images"));
-  app2.use("/", router);
-  return app2;
-};
-
-// src/server.ts
-var PORT = process.env.PORT ?? 3e3;
-var app = createApp();
-async function initialize() {
-  console.log("Attempting to connect to the database...");
-  try {
-    await sequelize_instance_default.authenticate();
-    console.log("Connection has been established successfully.");
-    await sequelize_instance_default.sync({ force: true });
-    console.log("Database synced successfully.");
-    app.listen(PORT, () => {
-      console.log(`Server running on ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Unable to connect to the database:", error);
-    process.exit(1);
-  }
-}
-initialize();
