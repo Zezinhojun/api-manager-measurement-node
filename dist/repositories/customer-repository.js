@@ -74,9 +74,6 @@ var CustomerRepository = class {
   async findCustomerByCode(customerCode) {
     return customer_model_default.findOne({ where: { customer_code: customerCode } });
   }
-  async findAllCustomers() {
-    return customer_model_default.findAll();
-  }
   async createCustomer(customerData) {
     return await customer_model_default.create(customerData);
   }

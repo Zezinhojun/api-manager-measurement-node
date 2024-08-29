@@ -1,4 +1,4 @@
-export abstract class HttpResponseBase {
+export abstract class HttpResponse {
     statusCode: number;
     body: any;
 

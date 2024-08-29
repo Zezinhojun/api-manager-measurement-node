@@ -6,10 +6,6 @@ export default class CustomerRepository {
         return Customer.findOne({ where: { customer_code: customerCode } })
     }
 
-    async findAllCustomers(): Promise<ICustomer[]> {
-        return Customer.findAll()
-    }
-
     async createCustomer(customerData: { customer_code: string }): Promise<ICustomer> {
         return await Customer.create(customerData)
     }

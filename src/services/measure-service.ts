@@ -1,4 +1,4 @@
-import { HttpResponseBase } from '../models/http-response-model';
+import { HttpResponse } from '../models/http-response-model';
 import MeasureRepository from '../repositories/measure-repository';
 import { BadRequestResponse } from '../utils/http-responses/bad-request-response';
 import { ConflictResponse } from '../utils/http-responses/conflict-response';
@@ -22,7 +22,7 @@ export default class MeasureService {
         readonly measureRepository: MeasureRepository,
         readonly customerService: CustomerService) { }
 
-    async createMeasure(measureData: MeasureData): Promise<HttpResponseBase> {
+    async createMeasure(measureData: MeasureData): Promise<HttpResponse> {
         const measureDate = new Date(measureData.measure_datetime);
 
         if (isNaN(measureDate.getTime())) {

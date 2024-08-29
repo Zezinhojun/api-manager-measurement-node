@@ -35,21 +35,6 @@ __export(routes_exports, {
 module.exports = __toCommonJS(routes_exports);
 var import_express = require("express");
 
-// src/controllers/customer-controller.ts
-var CustomerController = class _CustomerController {
-  constructor(customerService) {
-    this.customerService = customerService;
-  }
-  static build(customerService) {
-    return new _CustomerController(customerService);
-  }
-  async getCustomerByCode(req, res) {
-    const { customerCode } = req.params;
-    const httpResponse = await this.customerService.getCustomerByCode(customerCode);
-    res.status(httpResponse.statusCode).json(httpResponse.body);
-  }
-};
-
 // src/controllers/measure-controller.ts
 var MeasureController = class {
   constructor(measureService2) {
@@ -115,7 +100,7 @@ var validateConfirmMeasure = () => {
   ];
 };
 
-// src/middlewares/validate-measure-data.ts
+// src/middlewares/validate-get-measures-by-customer.ts
 var import_express_validator2 = require("express-validator");
 
 // src/utils/measure-types.ts
@@ -125,15 +110,44 @@ var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
   return MeasureType2;
 })(MeasureType || {});
 
-// src/middlewares/validate-measure-data.ts
-function validateMeasureData() {
+// src/middlewares/validate-get-measures-by-customer.ts
+var validateGetMeasuresByCustomer = () => {
   return [
-    (0, import_express_validator2.body)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
-    (0, import_express_validator2.body)("measure_datetime").notEmpty().withMessage("Data da medida n\xE3o fornecida.").isISO8601().withMessage("Data da medida inv\xE1lida."),
-    (0, import_express_validator2.body)("measure_type").notEmpty().withMessage("Tipo de medida n\xE3o fornecido.").isIn(Object.values(MeasureType)).withMessage("Tipo de medida inv\xE1lido."),
-    (0, import_express_validator2.body)("image").notEmpty().withMessage("Imagem n\xE3o fornecida."),
+    (0, import_express_validator2.param)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
+    (0, import_express_validator2.query)("measure_type").optional().custom((value) => {
+      if (value) {
+        if (typeof value !== "string") {
+          throw new Error("Tipo de medi\xE7\xE3o deve ser uma string.");
+        }
+        const measureType = value.toUpperCase();
+        if (!Object.values(MeasureType).includes(measureType)) {
+          throw new Error("Tipo de medi\xE7\xE3o n\xE3o permitida.");
+        }
+      }
+      return true;
+    }),
     (req, res, next) => {
       const errors = (0, import_express_validator2.validationResult)(req);
+      if (!errors.isEmpty()) {
+        const error = errors.array()[0];
+        const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg);
+        return res.status(httpResponse.statusCode).json(httpResponse.body);
+      }
+      next();
+    }
+  ];
+};
+
+// src/middlewares/validate-measure-data.ts
+var import_express_validator3 = require("express-validator");
+function validateMeasureData() {
+  return [
+    (0, import_express_validator3.body)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
+    (0, import_express_validator3.body)("measure_datetime").notEmpty().withMessage("Data da medida n\xE3o fornecida.").isISO8601().withMessage("Data da medida inv\xE1lida."),
+    (0, import_express_validator3.body)("measure_type").notEmpty().withMessage("Tipo de medida n\xE3o fornecido.").isIn(Object.values(MeasureType)).withMessage("Tipo de medida inv\xE1lido."),
+    (0, import_express_validator3.body)("image").notEmpty().withMessage("Imagem n\xE3o fornecida."),
+    (req, res, next) => {
+      const errors = (0, import_express_validator3.validationResult)(req);
       if (!errors.isEmpty()) {
         const error = errors.array()[0];
         const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg);
@@ -193,9 +207,6 @@ var customer_model_default = Customer;
 var CustomerRepository = class {
   async findCustomerByCode(customerCode) {
     return customer_model_default.findOne({ where: { customer_code: customerCode } });
-  }
-  async findAllCustomers() {
-    return customer_model_default.findAll();
   }
   async createCustomer(customerData) {
     return await customer_model_default.create(customerData);
@@ -296,13 +307,6 @@ var MeasureRepository = class {
       }
     });
   }
-  async findMeasuresByType(measureType) {
-    return measure_model_default.findAll({
-      where: {
-        measure_type: measureType
-      }
-    });
-  }
   async updateMeasure(measureId, updates) {
     const measure = await measure_model_default.findOne({ where: { id: measureId } });
     if (measure) {
@@ -338,10 +342,6 @@ var CustomerService = class {
     } else {
       return new NotFoundResponse("CUSTOMER_NOT_FOUND", "Cliente n\xE3o encontrado");
     }
-  }
-  async getAllCustomers() {
-    const customers = await this.customerRepository.findAllCustomers();
-    return new OkResponse("Clientes encontrados", customers);
   }
   async createCustomer(customerData) {
     const existingCustomer = await this.customerRepository.findCustomerByCode(customerData.customer_code);
@@ -493,42 +493,9 @@ var MeasureService = class {
   }
 };
 
-// src/middlewares/validate-get-measures-by-customer.ts
-var import_express_validator3 = require("express-validator");
-var validateGetMeasuresByCustomer = () => {
-  return [
-    // Valida o código do cliente
-    (0, import_express_validator3.param)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
-    // Valida o parâmetro query measure_type
-    (0, import_express_validator3.query)("measure_type").optional().custom((value) => {
-      if (value) {
-        if (typeof value !== "string") {
-          throw new Error("Tipo de medi\xE7\xE3o deve ser uma string.");
-        }
-        const measureType = value.toUpperCase();
-        if (!Object.values(MeasureType).includes(measureType)) {
-          throw new Error("Tipo de medi\xE7\xE3o n\xE3o permitido.");
-        }
-      }
-      return true;
-    }),
-    // Middleware para processar os erros de validação
-    (req, res, next) => {
-      const errors = (0, import_express_validator3.validationResult)(req);
-      if (!errors.isEmpty()) {
-        const error = errors.array()[0];
-        const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg);
-        return res.status(httpResponse.statusCode).json(httpResponse.body);
-      }
-      next();
-    }
-  ];
-};
-
 // src/routes.ts
 var customerRepository = new CustomerRepository();
 var customService = new CustomerService(customerRepository);
-var customerController = new CustomerController(customService);
 var measureRepository = new MeasureRepository();
 var measureService = new MeasureService(measureRepository, customService);
 var measureController = new MeasureController(measureService);

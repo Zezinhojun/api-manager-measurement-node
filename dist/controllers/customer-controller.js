@@ -23,12 +23,9 @@ __export(customer_controller_exports, {
   default: () => CustomerController
 });
 module.exports = __toCommonJS(customer_controller_exports);
-var CustomerController = class _CustomerController {
+var CustomerController = class {
   constructor(customerService) {
     this.customerService = customerService;
-  }
-  static build(customerService) {
-    return new _CustomerController(customerService);
   }
   async getCustomerByCode(req, res) {
     const { customerCode } = req.params;

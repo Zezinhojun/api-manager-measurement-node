@@ -34,14 +34,6 @@ export default class MeasureRepository {
         })
     }
 
-    async findMeasuresByType(measureType: string): Promise<Measure[]> {
-        return Measure.findAll({
-            where: {
-                measure_type: measureType
-            }
-        });
-    }
-
     async updateMeasure(measureId: string, updates: Partial<IMeasure>) {
         const measure = await Measure.findOne({ where: { id: measureId } })
         if (measure) {

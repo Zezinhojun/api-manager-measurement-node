@@ -163,13 +163,6 @@ var MeasureRepository = class {
       }
     });
   }
-  async findMeasuresByType(measureType) {
-    return measure_model_default.findAll({
-      where: {
-        measure_type: measureType
-      }
-    });
-  }
   async updateMeasure(measureId, updates) {
     const measure = await measure_model_default.findOne({ where: { id: measureId } });
     if (measure) {

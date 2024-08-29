@@ -25,13 +25,6 @@ __export(validate_get_measures_by_customer_exports, {
 module.exports = __toCommonJS(validate_get_measures_by_customer_exports);
 var import_express_validator = require("express-validator");
 
-// src/utils/measure-types.ts
-var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
-  MeasureType2["WATER"] = "WATER";
-  MeasureType2["GAS"] = "GAS";
-  return MeasureType2;
-})(MeasureType || {});
-
 // src/models/http-response-model.ts
 var HttpResponseBase = class {
   statusCode;
@@ -49,12 +42,17 @@ var BadRequestResponse = class extends HttpResponseBase {
   }
 };
 
+// src/utils/measure-types.ts
+var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
+  MeasureType2["WATER"] = "WATER";
+  MeasureType2["GAS"] = "GAS";
+  return MeasureType2;
+})(MeasureType || {});
+
 // src/middlewares/validate-get-measures-by-customer.ts
 var validateGetMeasuresByCustomer = () => {
   return [
-    // Valida o código do cliente
     (0, import_express_validator.param)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
-    // Valida o parâmetro query measure_type
     (0, import_express_validator.query)("measure_type").optional().custom((value) => {
       if (value) {
         if (typeof value !== "string") {
@@ -62,12 +60,11 @@ var validateGetMeasuresByCustomer = () => {
         }
         const measureType = value.toUpperCase();
         if (!Object.values(MeasureType).includes(measureType)) {
-          throw new Error("Tipo de medi\xE7\xE3o n\xE3o permitido.");
+          throw new Error("Tipo de medi\xE7\xE3o n\xE3o permitida.");
         }
       }
       return true;
     }),
-    // Middleware para processar os erros de validação
     (req, res, next) => {
       const errors = (0, import_express_validator.validationResult)(req);
       if (!errors.isEmpty()) {

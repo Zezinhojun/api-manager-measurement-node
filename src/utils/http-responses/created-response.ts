@@ -1,6 +1,6 @@
-import { HttpResponseBase } from '../../models/http-response-model';
+import { HttpResponse } from '../../models/http-response-model';
 
-export class CreatedResponse extends HttpResponseBase {
+export class CreatedResponse extends HttpResponse {
     constructor() {
         super(201, { message: "successful" });
     }

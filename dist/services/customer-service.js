@@ -61,10 +61,6 @@ var CustomerService = class {
       return new NotFoundResponse("CUSTOMER_NOT_FOUND", "Cliente n\xE3o encontrado");
     }
   }
-  async getAllCustomers() {
-    const customers = await this.customerRepository.findAllCustomers();
-    return new OkResponse("Clientes encontrados", customers);
-  }
   async createCustomer(customerData) {
     const existingCustomer = await this.customerRepository.findCustomerByCode(customerData.customer_code);
     if (existingCustomer) {
