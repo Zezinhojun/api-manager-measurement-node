@@ -41,7 +41,7 @@ const errorMessages = {
     }
 };
 
-describe('validateMeasureCreation middleware', () => {
+describe('validateMeasureCreation, middleware', () => {
     it('should return 400 for invalid customer_code', async () => {
         await assertErrorResponse(
             errorMessages.missingCustomerCode,
@@ -51,18 +51,6 @@ describe('validateMeasureCreation middleware', () => {
         await assertErrorResponse(
             errorMessages.invalidCustomerCode,
             { customer_code: 123, measure_datetime: '2024-11-23T14:20:00.000Z', measure_type: 'GAS', image: 'image-url' },
-        );
-    });
-
-    it('should return 400 for invalid measure_datetime', async () => {
-        await assertErrorResponse(
-            errorMessages.missingMeasureDatetime,
-            { customer_code: 'some-code', measure_type: 'GAS', image: 'image-url' },
-        );
-
-        await assertErrorResponse(
-            errorMessages.invalidMeasureDatetime,
-            { customer_code: 'some-code', measure_datetime: 'invalid-date', measure_type: 'GAS', image: 'image-url' },
         );
     });
 

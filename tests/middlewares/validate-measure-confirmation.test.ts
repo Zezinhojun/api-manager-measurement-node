@@ -25,7 +25,7 @@ const errorMessages = {
     }
 };
 
-describe('validateMeasureConfirmation middleware', () => {
+describe('validateMeasureConfirmation, middleware', () => {
     it('should return 400 if measure_uuid is not provided', async () => {
         await assertErrorResponse(
             errorMessages.missingMeasureUuid,

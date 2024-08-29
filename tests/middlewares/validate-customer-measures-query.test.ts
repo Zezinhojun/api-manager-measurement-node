@@ -27,7 +27,7 @@ const errorMessages = {
     }
 };
 
-describe('validateCustomerMeasuresQuery middleware', () => {
+describe('validateCustomerMeasuresQuery, middleware', () => {
     it('should return 400 if customer_code is not provided', async () => {
         await assertErrorResponse(
             app, // app is the Express instance
