@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import { CustomerService } from '../services/customer-service';
+import { MeasureType } from '../utils/measure-types';
 
 export default class CustomerController {
     constructor(readonly customerService: CustomerService) { }
@@ -14,8 +15,4 @@ export default class CustomerController {
         res.status(httpResponse.statusCode).json(httpResponse.body);
     }
 
-    async getCustomers(req: Request, res: Response) {
-        const httpResponse = await this.customerService.getAllCustomers()
-        res.status(httpResponse.statusCode).json(httpResponse.body);
-    }
 }

@@ -23,7 +23,6 @@ export default class MeasureService {
         readonly customerService: CustomerService) { }
 
     async createMeasure(measureData: MeasureData): Promise<HttpResponseBase> {
-
         const measureDate = new Date(measureData.measure_datetime);
 
         if (isNaN(measureDate.getTime())) {
@@ -68,24 +67,42 @@ export default class MeasureService {
         return this.measureRepository.findMeasureById(measureId)
     }
 
-    async getMeasureByCustomer(customerCode: string, measureType?: string) {
-        return this.measureRepository.findMeasuresByCustomerCode(customerCode, measureType)
+    async getMeasuresByCustomer(customerCode: string, measureType?: MeasureType) {
+        const customer = await this.customerService.getCustomerByCode(customerCode)
+
+        if (!customer) {
+            return new NotFoundResponse("MEASURE_NOT_FOUND", "Nenhuma leitura encontrada.");
+        }
+
+        const measures = await this.measureRepository.findAllMeasures(customerCode, measureType)
+
+        if (!measures.length) {
+            return new NotFoundResponse("MEASURES_NOT_FOUND", "Nenhuma leitura encontrada.");
+        }
+        const responseBody = {
+            customer_code: customerCode,
+            measures: measures.map(measure => ({
+                measure_uuid: measure.id,
+                measure_datetime: measure.measure_datetime,
+                measure_type: measure.measure_type,
+                has_confirmed: measure.has_confirmed,
+                image_url: measure.image_url
+            }))
+        };
+
+        return new OkResponse("Operação realizada com sucesso", responseBody);
     }
 
 
 
     async updateMeasure(measureUuid: string, confirmedValue: number) {
-
         const measure = await this.measureRepository.findMeasureById(measureUuid);
-
         if (!measure) {
             return new NotFoundResponse("MEASURE_NOT_FOUND", "Leitura não encontrada.");
         }
-
         if (measure.has_confirmed) {
             return new ConflictResponse("CONFIRMATION_DUPLICATE", "Leitura do mês já realizada.");
         }
-
         await this.measureRepository.updateMeasure(measure.id, { has_confirmed: true });
 
         return new OkResponse("Operação realizada com sucesso.", { success: true });

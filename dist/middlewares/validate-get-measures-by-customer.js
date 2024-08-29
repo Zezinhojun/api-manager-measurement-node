@@ -17,21 +17,28 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/middlewares/confirm-validate.ts
-var confirm_validate_exports = {};
-__export(confirm_validate_exports, {
-  validateConfirmMeasure: () => validateConfirmMeasure
+// src/middlewares/validate-get-measures-by-customer.ts
+var validate_get_measures_by_customer_exports = {};
+__export(validate_get_measures_by_customer_exports, {
+  validateGetMeasuresByCustomer: () => validateGetMeasuresByCustomer
 });
-module.exports = __toCommonJS(confirm_validate_exports);
+module.exports = __toCommonJS(validate_get_measures_by_customer_exports);
 var import_express_validator = require("express-validator");
+
+// src/utils/measure-types.ts
+var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
+  MeasureType2["WATER"] = "WATER";
+  MeasureType2["GAS"] = "GAS";
+  return MeasureType2;
+})(MeasureType || {});
 
 // src/models/http-response-model.ts
 var HttpResponseBase = class {
   statusCode;
   body;
-  constructor(statusCode, body2) {
+  constructor(statusCode, body) {
     this.statusCode = statusCode;
-    this.body = body2;
+    this.body = body;
   }
 };
 
@@ -42,16 +49,25 @@ var BadRequestResponse = class extends HttpResponseBase {
   }
 };
 
-// src/middlewares/confirm-validate.ts
-var validateConfirmMeasure = () => {
+// src/middlewares/validate-get-measures-by-customer.ts
+var validateGetMeasuresByCustomer = () => {
   return [
-    (0, import_express_validator.body)("measure_uuid").notEmpty().withMessage("UUID da medida n\xE3o fornecido."),
-    (0, import_express_validator.body)("confirmed_value").notEmpty().withMessage("Valor confirmado n\xE3o fornecido.").bail().custom((value) => {
-      if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
-        throw new Error("O valor confirmado deve ser um n\xFAmero inteiro positivo.");
+    // Valida o código do cliente
+    (0, import_express_validator.param)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
+    // Valida o parâmetro query measure_type
+    (0, import_express_validator.query)("measure_type").optional().custom((value) => {
+      if (value) {
+        if (typeof value !== "string") {
+          throw new Error("Tipo de medi\xE7\xE3o deve ser uma string.");
+        }
+        const measureType = value.toUpperCase();
+        if (!Object.values(MeasureType).includes(measureType)) {
+          throw new Error("Tipo de medi\xE7\xE3o n\xE3o permitido.");
+        }
       }
       return true;
     }),
+    // Middleware para processar os erros de validação
     (req, res, next) => {
       const errors = (0, import_express_validator.validationResult)(req);
       if (!errors.isEmpty()) {
@@ -65,5 +81,5 @@ var validateConfirmMeasure = () => {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  validateConfirmMeasure
+  validateGetMeasuresByCustomer
 });

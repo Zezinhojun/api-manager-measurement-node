@@ -35,8 +35,4 @@ var CustomerController = class _CustomerController {
     const httpResponse = await this.customerService.getCustomerByCode(customerCode);
     res.status(httpResponse.statusCode).json(httpResponse.body);
   }
-  async getCustomers(req, res) {
-    const httpResponse = await this.customerService.getAllCustomers();
-    res.status(httpResponse.statusCode).json(httpResponse.body);
-  }
 };

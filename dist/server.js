@@ -41,10 +41,6 @@ var CustomerController = class _CustomerController {
     const httpResponse = await this.customerService.getCustomerByCode(customerCode);
     res.status(httpResponse.statusCode).json(httpResponse.body);
   }
-  async getCustomers(req, res) {
-    const httpResponse = await this.customerService.getAllCustomers();
-    res.status(httpResponse.statusCode).json(httpResponse.body);
-  }
 };
 
 // src/controllers/measure-controller.ts
@@ -60,6 +56,12 @@ var MeasureController = class {
   async updateMeasure(req, res) {
     const { measure_uuid, confirmed_value } = req.body;
     const httpResponse = await this.measureService.updateMeasure(measure_uuid, confirmed_value);
+    res.status(httpResponse.statusCode).json(httpResponse.body);
+  }
+  async getMeasuresByCustomer(req, res) {
+    const { customer_code } = req.params;
+    const measure_type = req.query.measure_type;
+    const httpResponse = await this.measureService.getMeasuresByCustomer(customer_code, measure_type);
     res.status(httpResponse.statusCode).json(httpResponse.body);
   }
 };
@@ -85,7 +87,7 @@ var BadRequestResponse = class extends HttpResponseBase {
 };
 
 // src/middlewares/confirm-validate.ts
-function validateConfirmMeasure() {
+var validateConfirmMeasure = () => {
   return [
     (0, import_express_validator.body)("measure_uuid").notEmpty().withMessage("UUID da medida n\xE3o fornecido."),
     (0, import_express_validator.body)("confirmed_value").notEmpty().withMessage("Valor confirmado n\xE3o fornecido.").bail().custom((value) => {
@@ -104,7 +106,7 @@ function validateConfirmMeasure() {
       next();
     }
   ];
-}
+};
 
 // src/middlewares/validate-measure-data.ts
 var import_express_validator2 = require("express-validator");
@@ -268,6 +270,16 @@ var MeasureRepository = class {
   }
   async findMeasureById(measureId) {
     return measure_model_default.findOne({ where: { id: measureId } });
+  }
+  async findAllMeasures(customer_code, measure_type) {
+    const query2 = {};
+    if (customer_code) {
+      query2.where = { ...query2.where, customer_code };
+    }
+    if (measure_type) {
+      query2.where = { ...query2.where, measure_type: measure_type.toUpperCase() };
+    }
+    return measure_model_default.findAll(query2);
   }
   async findMeasuresByCustomerCode(customerCode, measureType) {
     return measure_model_default.findAll({
@@ -440,8 +452,26 @@ var MeasureService = class {
   async getMeasure(measureId) {
     return this.measureRepository.findMeasureById(measureId);
   }
-  async getMeasureByCustomer(customerCode, measureType) {
-    return this.measureRepository.findMeasuresByCustomerCode(customerCode, measureType);
+  async getMeasuresByCustomer(customerCode, measureType) {
+    const customer = await this.customerService.getCustomerByCode(customerCode);
+    if (!customer) {
+      return new NotFoundResponse("MEASURE_NOT_FOUND", "Nenhuma leitura encontrada.");
+    }
+    const measures = await this.measureRepository.findAllMeasures(customerCode, measureType);
+    if (!measures.length) {
+      return new NotFoundResponse("MEASURES_NOT_FOUND", "Nenhuma leitura encontrada.");
+    }
+    const responseBody = {
+      customer_code: customerCode,
+      measures: measures.map((measure) => ({
+        measure_uuid: measure.id,
+        measure_datetime: measure.measure_datetime,
+        measure_type: measure.measure_type,
+        has_confirmed: measure.has_confirmed,
+        image_url: measure.image_url
+      }))
+    };
+    return new OkResponse("Opera\xE7\xE3o realizada com sucesso", responseBody);
   }
   async updateMeasure(measureUuid, confirmedValue) {
     const measure = await this.measureRepository.findMeasureById(measureUuid);
@@ -456,6 +486,38 @@ var MeasureService = class {
   }
 };
 
+// src/middlewares/validate-get-measures-by-customer.ts
+var import_express_validator3 = require("express-validator");
+var validateGetMeasuresByCustomer = () => {
+  return [
+    // Valida o código do cliente
+    (0, import_express_validator3.param)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
+    // Valida o parâmetro query measure_type
+    (0, import_express_validator3.query)("measure_type").optional().custom((value) => {
+      if (value) {
+        if (typeof value !== "string") {
+          throw new Error("Tipo de medi\xE7\xE3o deve ser uma string.");
+        }
+        const measureType = value.toUpperCase();
+        if (!Object.values(MeasureType).includes(measureType)) {
+          throw new Error("Tipo de medi\xE7\xE3o n\xE3o permitido.");
+        }
+      }
+      return true;
+    }),
+    // Middleware para processar os erros de validação
+    (req, res, next) => {
+      const errors = (0, import_express_validator3.validationResult)(req);
+      if (!errors.isEmpty()) {
+        const error = errors.array()[0];
+        const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg);
+        return res.status(httpResponse.statusCode).json(httpResponse.body);
+      }
+      next();
+    }
+  ];
+};
+
 // src/routes.ts
 var customerRepository = new CustomerRepository();
 var customService = new CustomerService(customerRepository);
@@ -466,7 +528,7 @@ var measureController = new MeasureController(measureService);
 var router = (0, import_express.Router)();
 router.post("/upload", validateMeasureData(), (req, res) => measureController.createMeasure(req, res));
 router.patch("/confirm", validateConfirmMeasure(), (req, res) => measureController.updateMeasure(req, res));
-router.get("/:customerCode/list", (req, res) => customerController.getCustomerByCode(req, res));
+router.get("/:customer_code/list", validateGetMeasuresByCustomer(), (req, res) => measureController.getMeasuresByCustomer(req, res));
 
 // src/app.ts
 var createApp = () => {

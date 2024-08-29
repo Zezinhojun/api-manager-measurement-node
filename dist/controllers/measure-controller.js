@@ -37,6 +37,12 @@ var MeasureController = class {
     const httpResponse = await this.measureService.updateMeasure(measure_uuid, confirmed_value);
     res.status(httpResponse.statusCode).json(httpResponse.body);
   }
+  async getMeasuresByCustomer(req, res) {
+    const { customer_code } = req.params;
+    const measure_type = req.query.measure_type;
+    const httpResponse = await this.measureService.getMeasuresByCustomer(customer_code, measure_type);
+    res.status(httpResponse.statusCode).json(httpResponse.body);
+  }
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

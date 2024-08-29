@@ -145,6 +145,16 @@ var MeasureRepository = class {
   async findMeasureById(measureId) {
     return measure_model_default.findOne({ where: { id: measureId } });
   }
+  async findAllMeasures(customer_code, measure_type) {
+    const query = {};
+    if (customer_code) {
+      query.where = { ...query.where, customer_code };
+    }
+    if (measure_type) {
+      query.where = { ...query.where, measure_type: measure_type.toUpperCase() };
+    }
+    return measure_model_default.findAll(query);
+  }
   async findMeasuresByCustomerCode(customerCode, measureType) {
     return measure_model_default.findAll({
       where: {

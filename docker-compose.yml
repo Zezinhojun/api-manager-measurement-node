@@ -22,8 +22,6 @@ services:
       - DB_USER=myuser
       - DB_PASSWORD=mypassword
       - DB_NAME=mydatabase
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
     ports:
       - "3000:3000"
     depends_on:

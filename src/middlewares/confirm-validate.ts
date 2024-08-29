@@ -3,7 +3,7 @@ import { body, validationResult } from 'express-validator';
 
 import { BadRequestResponse } from '../utils/http-responses/bad-request-response';
 
-export function validateConfirmMeasure() {
+export const validateConfirmMeasure = () => {
     return [
         body('measure_uuid').notEmpty().withMessage('UUID da medida não fornecido.'),
         body('confirmed_value').notEmpty().withMessage('Valor confirmado não fornecido.')

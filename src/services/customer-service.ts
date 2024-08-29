@@ -1,7 +1,9 @@
+import { param } from 'express-validator';
 import { HttpResponseBase } from '../models/http-response-model';
 import CustomerRepository from '../repositories/customer-repository';
 import { NotFoundResponse } from '../utils/http-responses/not-found-response';
 import { OkResponse } from '../utils/http-responses/ok-response';
+
 
 export class CustomerService {
     constructor(readonly customerRepository: CustomerRepository) { }

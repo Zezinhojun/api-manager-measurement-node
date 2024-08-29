@@ -171,8 +171,26 @@ var MeasureService = class {
   async getMeasure(measureId) {
     return this.measureRepository.findMeasureById(measureId);
   }
-  async getMeasureByCustomer(customerCode, measureType) {
-    return this.measureRepository.findMeasuresByCustomerCode(customerCode, measureType);
+  async getMeasuresByCustomer(customerCode, measureType) {
+    const customer = await this.customerService.getCustomerByCode(customerCode);
+    if (!customer) {
+      return new NotFoundResponse("MEASURE_NOT_FOUND", "Nenhuma leitura encontrada.");
+    }
+    const measures = await this.measureRepository.findAllMeasures(customerCode, measureType);
+    if (!measures.length) {
+      return new NotFoundResponse("MEASURES_NOT_FOUND", "Nenhuma leitura encontrada.");
+    }
+    const responseBody = {
+      customer_code: customerCode,
+      measures: measures.map((measure) => ({
+        measure_uuid: measure.id,
+        measure_datetime: measure.measure_datetime,
+        measure_type: measure.measure_type,
+        has_confirmed: measure.has_confirmed,
+        image_url: measure.image_url
+      }))
+    };
+    return new OkResponse("Opera\xE7\xE3o realizada com sucesso", responseBody);
   }
   async updateMeasure(measureUuid, confirmedValue) {
     const measure = await this.measureRepository.findMeasureById(measureUuid);
