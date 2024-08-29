@@ -16,7 +16,7 @@ function fileToGenerativePart(base64: string, mimeType: string) {
 
 export async function run(base64: string) {
     const model = genAi.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = "retornar o valor da conta no seguinte formato: “measure_value”:integer,"
+    const prompt = "retornar o valor da conta no seguinte formato: integer ou number,"
     const imageParts = [fileToGenerativePart(base64, "image/jpeg")]
 
     const result = await model.generateContent([prompt, ...imageParts]);
@@ -25,7 +25,6 @@ export async function run(base64: string) {
 
     const imageFilename = 'image_' + Date.now() + '.jpg';
     const imageUrl = await saveImage(base64, imageFilename);
-    console.log(imageUrl)
     return { text, imageUrl };
 }
 

@@ -26,11 +26,12 @@ module.exports = __toCommonJS(measure_utils_exports);
 var MeasureUtils = class _MeasureUtils {
   static validMeasureTypes = [
     "WATER" /* WATER */,
-    "GAS" /* GAS */
+    "GAS" /* GAS */,
+    "ELECTRICITY" /* ELECTRICITY */,
+    "PHONE" /* PHONE */
   ];
   static validateMeasureData(measureData) {
     const { image, customer_code, measure_datetime, measure_type } = measureData;
-    ;
     if (!customer_code) {
       return { isValid: false, error: { code: "INVALID_DATA", description: "C\xF3digo do cliente n\xE3o fornecido." } };
     }
@@ -42,14 +43,14 @@ var MeasureUtils = class _MeasureUtils {
     }
     return { isValid: true };
   }
-  static hasDuplicateMeasurementInCurrentMonth(measurements, targetDate) {
+  static hasDuplicateMeasurementInCurrentMonth(measurements, targetDate, targetType) {
     const targetMonth = targetDate.getMonth() + 1;
     const targetYear = targetDate.getFullYear();
     return measurements.some((measurement) => {
       const measurementDate = new Date(measurement.measure_datetime);
       const measurementMonth = measurementDate.getMonth() + 1;
       const measurementYear = measurementDate.getFullYear();
-      return measurementMonth === targetMonth && measurementYear === targetYear;
+      return measurementMonth === targetMonth && measurementYear === targetYear && measurement.measure_type === targetType;
     });
   }
 };

@@ -72,11 +72,12 @@ var imagebase64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAUFBQUFBQUGBgUICAcICAsKCQkKC
 var MeasureUtils = class _MeasureUtils {
   static validMeasureTypes = [
     "WATER" /* WATER */,
-    "GAS" /* GAS */
+    "GAS" /* GAS */,
+    "ELECTRICITY" /* ELECTRICITY */,
+    "PHONE" /* PHONE */
   ];
   static validateMeasureData(measureData) {
     const { image, customer_code, measure_datetime, measure_type } = measureData;
-    ;
     if (!customer_code) {
       return { isValid: false, error: { code: "INVALID_DATA", description: "C\xF3digo do cliente n\xE3o fornecido." } };
     }
@@ -88,14 +89,14 @@ var MeasureUtils = class _MeasureUtils {
     }
     return { isValid: true };
   }
-  static hasDuplicateMeasurementInCurrentMonth(measurements, targetDate) {
+  static hasDuplicateMeasurementInCurrentMonth(measurements, targetDate, targetType) {
     const targetMonth = targetDate.getMonth() + 1;
     const targetYear = targetDate.getFullYear();
     return measurements.some((measurement) => {
       const measurementDate = new Date(measurement.measure_datetime);
       const measurementMonth = measurementDate.getMonth() + 1;
       const measurementYear = measurementDate.getFullYear();
-      return measurementMonth === targetMonth && measurementYear === targetYear;
+      return measurementMonth === targetMonth && measurementYear === targetYear && measurement.measure_type === targetType;
     });
   }
 };
@@ -116,7 +117,7 @@ function fileToGenerativePart(base64, mimeType) {
 }
 async function run(base64) {
   const model = genAi.getGenerativeModel({ model: "gemini-1.5-flash" });
-  const prompt = "retornar o valor da conta no seguinte formato: \u201Cmeasure_value\u201D:integer,";
+  const prompt = "retornar o valor da conta no seguinte formato: integer ou number,";
   const imageParts = [fileToGenerativePart(base64, "image/jpeg")];
   const result = await model.generateContent([prompt, ...imageParts]);
   const response = result.response;
@@ -150,14 +151,9 @@ var MeasureService = class {
     this.customerService = customerService;
   }
   async createMeasure(measureData) {
-    const validation = MeasureUtils.validateMeasureData(measureData);
-    const result = await run(imagebase64);
-    if (!validation.isValid) {
-      return new BadRequestResponse(validation.error.code, validation.error.description);
-    }
     const measureDate = new Date(measureData.measure_datetime);
     if (isNaN(measureDate.getTime())) {
-      return new BadRequestResponse("INVALID_DATA", "Data da medida inv\xE1lida.");
+      return new BadRequestResponse("INVALID_DATA", "Data da medida inv\xE1lida ali.");
     }
     const customerResponse = await this.customerService.getCustomerByCode(measureData.customer_code);
     if (customerResponse.statusCode === 404) {
@@ -167,9 +163,10 @@ var MeasureService = class {
       }
     }
     const existingMeasures = await this.measureRepository.findMeasuresByCustomerCode(measureData.customer_code);
-    if (MeasureUtils.hasDuplicateMeasurementInCurrentMonth(existingMeasures, measureDate)) {
+    if (MeasureUtils.hasDuplicateMeasurementInCurrentMonth(existingMeasures, measureDate, measureData.measure_type)) {
       return new ConflictResponse("DOUBLE_REPORT", "J\xE1 existe uma leitura para este tipo no m\xEAs atual");
     }
+    const result = await run(imagebase64);
     const newMeasure = await this.measureRepository.createMeasure({
       customer_code: measureData.customer_code,
       measure_datetime: measureDate,
@@ -177,11 +174,10 @@ var MeasureService = class {
       image_url: result.imageUrl,
       has_confirmed: false
     });
-    console.log(newMeasure);
     const responseBody = {
       image_url: newMeasure.image_url,
       measure_value: parseInt(result.text),
-      measure_uuid: newMeasure.id
+      measure_uuid: newMeasure.id.toString()
     };
     return new OkResponse("Opera\xE7\xE3o realizada com sucesso", responseBody);
   }

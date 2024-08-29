@@ -1,13 +1,13 @@
 import { MeasureAttributes } from '../database/sequelize/models/measure-model';
 import { MeasureType } from './measure-types';
 
-
 export class MeasureUtils {
     private static validMeasureTypes: MeasureType[] = [
         MeasureType.WATER,
-        MeasureType.GAS
+        MeasureType.GAS,
+        MeasureType.ELECTRICITY,
+        MeasureType.PHONE
     ];
-
 
     public static validateMeasureData(measureData: {
         image: string;
@@ -16,8 +16,6 @@ export class MeasureUtils {
         measure_type: MeasureType;
     }): { isValid: boolean; error?: { code: string; description: string } } {
         const { image, customer_code, measure_datetime, measure_type } = measureData;
-
-        ;
 
         if (!customer_code) {
             return { isValid: false, error: { code: "INVALID_DATA", description: "Código do cliente não fornecido." } };
@@ -32,7 +30,11 @@ export class MeasureUtils {
         return { isValid: true };
     }
 
-    public static hasDuplicateMeasurementInCurrentMonth(measurements: MeasureAttributes[], targetDate: Date): boolean {
+    public static hasDuplicateMeasurementInCurrentMonth(
+        measurements: MeasureAttributes[],
+        targetDate: Date,
+        targetType: MeasureType // Adicione o parâmetro targetType
+    ): boolean {
         const targetMonth = targetDate.getMonth() + 1;
         const targetYear = targetDate.getFullYear();
 
@@ -40,7 +42,9 @@ export class MeasureUtils {
             const measurementDate = new Date(measurement.measure_datetime);
             const measurementMonth = measurementDate.getMonth() + 1;
             const measurementYear = measurementDate.getFullYear();
-            return measurementMonth === targetMonth && measurementYear === targetYear;
+            return measurementMonth === targetMonth &&
+                measurementYear === targetYear &&
+                measurement.measure_type === targetType; // Compare com targetType
         });
     }
 }

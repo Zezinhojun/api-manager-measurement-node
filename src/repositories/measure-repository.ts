@@ -2,7 +2,8 @@ import Measure, { MeasureAttributes } from "../database/sequelize/models/measure
 
 export default class MeasureRepository {
     async createMeasure(measureData: Omit<MeasureAttributes, 'id'>) {
-        return Measure.create(measureData)
+        const measure = await Measure.create(measureData);
+        return measure;
     }
 
     async findMeasureById(measureId: number) {

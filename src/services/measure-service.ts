@@ -23,16 +23,11 @@ export default class MeasureService {
         readonly customerService: CustomerService) { }
 
     async createMeasure(measureData: MeasureData): Promise<HttpResponseBase> {
-        const validation = MeasureUtils.validateMeasureData(measureData);
-        const result = await run(imagebase64)
-
-        if (!validation.isValid) {
-            return new BadRequestResponse(validation.error!.code, validation.error!.description);
-        }
 
         const measureDate = new Date(measureData.measure_datetime);
+
         if (isNaN(measureDate.getTime())) {
-            return new BadRequestResponse("INVALID_DATA", "Data da medida inválida.");
+            return new BadRequestResponse("INVALID_DATA", "Data da medida inválida ali.");
         }
 
         const customerResponse = await this.customerService.getCustomerByCode(measureData.customer_code);
@@ -42,15 +37,15 @@ export default class MeasureService {
             if (createCustomerResponse.statusCode !== 200) {
                 return new BadRequestResponse("INVALID_CUSTOMER", "Não foi possível criar o cliente.");
             }
-
-
         }
 
         const existingMeasures = await this.measureRepository.findMeasuresByCustomerCode(measureData.customer_code);
 
-        if (MeasureUtils.hasDuplicateMeasurementInCurrentMonth(existingMeasures, measureDate)) {
+        if (MeasureUtils.hasDuplicateMeasurementInCurrentMonth(existingMeasures, measureDate, measureData.measure_type)) {
             return new ConflictResponse("DOUBLE_REPORT", "Já existe uma leitura para este tipo no mês atual");
         }
+
+        const result = await run(imagebase64)
 
         const newMeasure = await this.measureRepository.createMeasure({
             customer_code: measureData.customer_code,
@@ -60,15 +55,15 @@ export default class MeasureService {
             has_confirmed: false
         });
 
-        console.log(newMeasure)
-
         const responseBody = {
             image_url: newMeasure.image_url,
             measure_value: parseInt(result.text),
-            measure_uuid: newMeasure.id
+            measure_uuid: newMeasure.id.toString()
         };
 
         return new OkResponse("Operação realizada com sucesso", responseBody);
+
+
 
 
 

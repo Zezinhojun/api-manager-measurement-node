@@ -42,19 +42,23 @@ var sequelize_instance_default = sequelize;
 // src/database/sequelize/models/customer-model.ts
 var import_sequelize2 = require("sequelize");
 var Customer = class extends import_sequelize2.Model {
-  id;
-  customer_code;
+  get id() {
+    return this.getDataValue("id");
+  }
+  get customer_code() {
+    return this.getDataValue("customer_code");
+  }
 };
 Customer.init({
   id: {
     type: import_sequelize2.DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
+    autoIncrement: true
   },
   customer_code: {
     type: import_sequelize2.DataTypes.STRING,
     allowNull: false,
-    unique: true
+    unique: true,
+    primaryKey: true
   }
 }, {
   sequelize: sequelize_instance_default,
@@ -66,12 +70,24 @@ var customer_model_default = Customer;
 
 // src/database/sequelize/models/measure-model.ts
 var Measure = class extends import_sequelize3.Model {
-  id;
-  measure_datetime;
-  measure_type;
-  image_url;
-  customer_code;
-  has_confirmed;
+  get id() {
+    return this.getDataValue("id");
+  }
+  get measure_datetime() {
+    return this.getDataValue("measure_datetime");
+  }
+  get measure_type() {
+    return this.getDataValue("measure_type");
+  }
+  get image_url() {
+    return this.getDataValue("image_url");
+  }
+  get customer_code() {
+    return this.getDataValue("customer_code");
+  }
+  get has_confirmed() {
+    return this.getDataValue("has_confirmed");
+  }
 };
 Measure.init({
   id: {
@@ -107,7 +123,9 @@ Measure.init({
   sequelize: sequelize_instance_default,
   modelName: "Measure",
   tableName: "measures",
-  timestamps: false
+  timestamps: false,
+  createdAt: false,
+  updatedAt: false
 });
 Measure.belongsTo(customer_model_default, { foreignKey: "customer_code" });
 customer_model_default.hasMany(Measure, { foreignKey: "customer_code" });

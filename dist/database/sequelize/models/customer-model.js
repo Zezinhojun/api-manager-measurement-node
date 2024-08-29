@@ -41,19 +41,23 @@ var sequelize_instance_default = sequelize;
 
 // src/database/sequelize/models/customer-model.ts
 var Customer = class extends import_sequelize2.Model {
-  id;
-  customer_code;
+  get id() {
+    return this.getDataValue("id");
+  }
+  get customer_code() {
+    return this.getDataValue("customer_code");
+  }
 };
 Customer.init({
   id: {
     type: import_sequelize2.DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
+    autoIncrement: true
   },
   customer_code: {
     type: import_sequelize2.DataTypes.STRING,
     allowNull: false,
-    unique: true
+    unique: true,
+    primaryKey: true
   }
 }, {
   sequelize: sequelize_instance_default,

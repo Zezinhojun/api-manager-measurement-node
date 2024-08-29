@@ -48,7 +48,7 @@ function fileToGenerativePart(base64, mimeType) {
 }
 async function run(base64) {
   const model = genAi.getGenerativeModel({ model: "gemini-1.5-flash" });
-  const prompt = "retornar o valor da conta no seguinte formato: \u201Cmeasure_value\u201D:integer,";
+  const prompt = "retornar o valor da conta no seguinte formato: integer ou number,";
   const imageParts = [fileToGenerativePart(base64, "image/jpeg")];
   const result = await model.generateContent([prompt, ...imageParts]);
   const response = result.response;

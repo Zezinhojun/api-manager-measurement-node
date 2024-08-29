@@ -9,20 +9,25 @@ export interface CustomerAttributes {
 interface CustomerCreationAttributes extends Optional<CustomerAttributes, 'id'> { }
 
 class Customer extends Model<CustomerAttributes, CustomerCreationAttributes> implements CustomerAttributes {
-    public id!: number;
-    public customer_code!: string;
+    public get id(): number {
+        return this.getDataValue('id');
+    }
+    public get customer_code(): string {
+        return this.getDataValue('customer_code');
+    }
 }
 
 Customer.init({
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
-        primaryKey: true,
+
     },
     customer_code: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+        primaryKey: true,
     },
 }, {
     sequelize,

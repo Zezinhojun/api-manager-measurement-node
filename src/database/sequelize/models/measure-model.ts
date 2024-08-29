@@ -15,12 +15,24 @@ export interface MeasureAttributes {
 interface MeasureCreationAttributes extends Optional<MeasureAttributes, 'id'> { }
 
 class Measure extends Model<MeasureAttributes, MeasureCreationAttributes> implements MeasureAttributes {
-    public id!: number;
-    public measure_datetime!: Date;
-    public measure_type!: MeasureType;
-    public image_url!: string;
-    public customer_code!: string;
-    public has_confirmed!: boolean;
+    public get id(): number {
+        return this.getDataValue('id');
+    }
+    public get measure_datetime(): Date {
+        return this.getDataValue('measure_datetime');
+    }
+    public get measure_type(): MeasureType {
+        return this.getDataValue('measure_type');
+    }
+    public get image_url(): string {
+        return this.getDataValue('image_url');
+    }
+    public get customer_code(): string {
+        return this.getDataValue('customer_code');
+    }
+    public get has_confirmed(): boolean {
+        return this.getDataValue('has_confirmed');
+    }
 }
 
 Measure.init({
@@ -59,6 +71,8 @@ Measure.init({
     modelName: 'Measure',
     tableName: 'measures',
     timestamps: false,
+    createdAt: false,
+    updatedAt: false,
 });
 
 Measure.belongsTo(Customer, { foreignKey: 'customer_code' });
