@@ -93,8 +93,6 @@ export default class MeasureService {
         return new OkResponse("Operação realizada com sucesso", responseBody);
     }
 
-
-
     async updateMeasure(measureUuid: string, confirmedValue: number) {
         const measure = await this.measureRepository.findMeasureById(measureUuid);
         if (!measure) {

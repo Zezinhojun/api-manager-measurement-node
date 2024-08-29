@@ -4,7 +4,7 @@ import { body, validationResult } from 'express-validator';
 import { BadRequestResponse } from '../utils/http-responses/bad-request-response';
 import { MeasureType } from '../utils/measure-types';
 
-export function validateMeasureData() {
+export function validateMeasureCreation() {
     return [
         body('customer_code').notEmpty().withMessage('Código do cliente não fornecido.')
             .isString().withMessage('Código do cliente deve ser uma string.'),

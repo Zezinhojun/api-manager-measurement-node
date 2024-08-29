@@ -4,18 +4,14 @@ import { param, query, validationResult } from 'express-validator';
 import { BadRequestResponse } from '../utils/http-responses/bad-request-response';
 import { MeasureType } from '../utils/measure-types';
 
-export const validateGetMeasuresByCustomer = () => {
+export const validateCustomerMeasuresQuery = () => {
     return [
         param('customer_code')
-            .notEmpty().withMessage('Código do cliente não fornecido.')
-            .isString().withMessage('Código do cliente deve ser uma string.'),
+            .notEmpty().withMessage('Código do cliente não fornecido.'),
         query('measure_type')
             .optional()
             .custom(value => {
                 if (value) {
-                    if (typeof value !== 'string') {
-                        throw new Error('Tipo de medição deve ser uma string.');
-                    }
                     const measureType = value.toUpperCase() as MeasureType;
                     if (!Object.values(MeasureType).includes(measureType)) {
                         throw new Error('Tipo de medição não permitida.');
