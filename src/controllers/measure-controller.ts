@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
-import MeasureService from "../services/measure-service";
+import { Request, Response } from 'express';
+
+import MeasureService from '../services/measure-service';
 
 export class MeasureController {
     constructor(readonly measureService: MeasureService) { }

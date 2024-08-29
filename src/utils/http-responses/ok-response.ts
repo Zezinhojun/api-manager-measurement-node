@@ -1,4 +1,4 @@
-import { HttpResponseBase } from "../../models/http-response-model";
+import { HttpResponseBase } from '../../models/http-response-model';
 
 export class OkResponse extends HttpResponseBase {
     constructor(message: string, data: any) {

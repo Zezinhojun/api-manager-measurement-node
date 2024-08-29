@@ -23,26 +23,7 @@ __export(measure_utils_exports, {
   MeasureUtils: () => MeasureUtils
 });
 module.exports = __toCommonJS(measure_utils_exports);
-var MeasureUtils = class _MeasureUtils {
-  static validMeasureTypes = [
-    "WATER" /* WATER */,
-    "GAS" /* GAS */,
-    "ELECTRICITY" /* ELECTRICITY */,
-    "PHONE" /* PHONE */
-  ];
-  static validateMeasureData(measureData) {
-    const { image, customer_code, measure_datetime, measure_type } = measureData;
-    if (!customer_code) {
-      return { isValid: false, error: { code: "INVALID_DATA", description: "C\xF3digo do cliente n\xE3o fornecido." } };
-    }
-    if (!measure_datetime || isNaN(Date.parse(measure_datetime))) {
-      return { isValid: false, error: { code: "INVALID_DATA", description: "Data da medida inv\xE1lida." } };
-    }
-    if (!measure_type || !_MeasureUtils.validMeasureTypes.includes(measure_type)) {
-      return { isValid: false, error: { code: "INVALID_DATA", description: "Tipo de medida inv\xE1lido." } };
-    }
-    return { isValid: true };
-  }
+var MeasureUtils = class {
   static hasDuplicateMeasurementInCurrentMonth(measurements, targetDate, targetType) {
     const targetMonth = targetDate.getMonth() + 1;
     const targetYear = targetDate.getFullYear();

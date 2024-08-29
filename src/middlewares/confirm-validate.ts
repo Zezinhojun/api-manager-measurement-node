@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
+
 import { BadRequestResponse } from '../utils/http-responses/bad-request-response';
 
 export function validateConfirmMeasure() {

@@ -1,4 +1,3 @@
-
 export abstract class HttpResponseBase {
     statusCode: number;
     body: any;

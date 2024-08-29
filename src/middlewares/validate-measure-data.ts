@@ -1,11 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { MeasureType } from '../utils/measure-types';
+
 import { BadRequestResponse } from '../utils/http-responses/bad-request-response';
+import { MeasureType } from '../utils/measure-types';
 
 export function validateMeasureData() {
     return [
-        body('customer_code').notEmpty().withMessage('Código do cliente não fornecido.'),
+        body('customer_code').notEmpty().withMessage('Código do cliente não fornecido.')
+            .isString().withMessage('Código do cliente deve ser uma string.'),
         body('measure_datetime').notEmpty().withMessage('Data da medida não fornecida.')
             .isISO8601().withMessage('Data da medida inválida.'),
         body('measure_type').notEmpty().withMessage('Tipo de medida não fornecido.')

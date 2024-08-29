@@ -1,14 +1,12 @@
 import { DataTypes, Model, Optional } from 'sequelize';
+
+import { ICustomer } from '../../../models/customer-model';
 import sequelize from '../sequelize-instance';
 
-export interface CustomerAttributes {
-    id: number;
-    customer_code: string;
-}
 
-interface CustomerCreationAttributes extends Optional<CustomerAttributes, 'id'> { }
+interface CustomerCreationAttributes extends Optional<ICustomer, 'id'> { }
 
-class Customer extends Model<CustomerAttributes, CustomerCreationAttributes> implements CustomerAttributes {
+class Customer extends Model<ICustomer, CustomerCreationAttributes> implements ICustomer {
     public get id(): number {
         return this.getDataValue('id');
     }

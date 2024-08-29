@@ -1,20 +1,13 @@
 import { DataTypes, Model, Optional } from 'sequelize';
+
+import { IMeasure } from '../../../models/measure-model';
+import { MeasureType } from '../../../utils/measure-types';
 import sequelize from '../sequelize-instance';
 import Customer from './customer-model';
-import { MeasureType } from '../../../utils/measure-types';
 
-export interface MeasureAttributes {
-    id: string;
-    measure_datetime: Date;
-    measure_type: MeasureType;
-    image_url: string;
-    customer_code: string;
-    has_confirmed: boolean;
-}
+interface MeasureCreationAttributes extends Optional<IMeasure, 'id'> { }
 
-interface MeasureCreationAttributes extends Optional<MeasureAttributes, 'id'> { }
-
-class Measure extends Model<MeasureAttributes, MeasureCreationAttributes> implements MeasureAttributes {
+class Measure extends Model<IMeasure, MeasureCreationAttributes> implements IMeasure {
     public get id(): string {
         return this.getDataValue('id');
     }
@@ -80,7 +73,5 @@ Measure.init({
 
 Measure.belongsTo(Customer, { foreignKey: 'customer_code' });
 Customer.hasMany(Measure, { foreignKey: 'customer_code' });
-
-
 
 export default Measure;

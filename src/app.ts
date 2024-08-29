@@ -1,5 +1,6 @@
 import express, { json } from 'express';
-import { router } from "./routes";
+
+import { router } from './routes';
 
 export const createApp = () => {
     const app = express();

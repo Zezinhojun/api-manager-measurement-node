@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
-import { CustomerService } from "../services/customer-service";
+import { Request, Response } from 'express';
+
+import { CustomerService } from '../services/customer-service';
 
 export default class CustomerController {
     constructor(readonly customerService: CustomerService) { }

@@ -1,12 +1,13 @@
-import { Request, Response, Router } from "express";
-import { CustomerService } from "./services/customer-service";
-import CustomerRepository from "./repositories/customer-repository";
-import CustomerController from "./controllers/customer-controller";
-import MeasureRepository from "./repositories/measure-repository";
-import MeasureService from "./services/measure-service";
-import { MeasureController } from "./controllers/measure-controller";
-import { validateMeasureData } from "./middlewares/validate-measure-data";
-import { validateConfirmMeasure } from "./middlewares/confirm-validate";
+import { Request, Response, Router } from 'express';
+
+import CustomerController from './controllers/customer-controller';
+import { MeasureController } from './controllers/measure-controller';
+import { validateConfirmMeasure } from './middlewares/confirm-validate';
+import { validateMeasureData } from './middlewares/validate-measure-data';
+import CustomerRepository from './repositories/customer-repository';
+import MeasureRepository from './repositories/measure-repository';
+import { CustomerService } from './services/customer-service';
+import MeasureService from './services/measure-service';
 
 const customerRepository = new CustomerRepository()
 const customService = new CustomerService(customerRepository)

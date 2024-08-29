@@ -25,15 +25,6 @@ __export(validate_measure_data_exports, {
 module.exports = __toCommonJS(validate_measure_data_exports);
 var import_express_validator = require("express-validator");
 
-// src/utils/measure-types.ts
-var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
-  MeasureType2["WATER"] = "WATER";
-  MeasureType2["GAS"] = "GAS";
-  MeasureType2["ELECTRICITY"] = "ELECTRICITY";
-  MeasureType2["PHONE"] = "PHONE";
-  return MeasureType2;
-})(MeasureType || {});
-
 // src/models/http-response-model.ts
 var HttpResponseBase = class {
   statusCode;
@@ -51,10 +42,17 @@ var BadRequestResponse = class extends HttpResponseBase {
   }
 };
 
+// src/utils/measure-types.ts
+var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
+  MeasureType2["WATER"] = "WATER";
+  MeasureType2["GAS"] = "GAS";
+  return MeasureType2;
+})(MeasureType || {});
+
 // src/middlewares/validate-measure-data.ts
 function validateMeasureData() {
   return [
-    (0, import_express_validator.body)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido."),
+    (0, import_express_validator.body)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
     (0, import_express_validator.body)("measure_datetime").notEmpty().withMessage("Data da medida n\xE3o fornecida.").isISO8601().withMessage("Data da medida inv\xE1lida."),
     (0, import_express_validator.body)("measure_type").notEmpty().withMessage("Tipo de medida n\xE3o fornecido.").isIn(Object.values(MeasureType)).withMessage("Tipo de medida inv\xE1lido."),
     (0, import_express_validator.body)("image").notEmpty().withMessage("Imagem n\xE3o fornecida."),

@@ -1,4 +1,4 @@
-import { HttpResponseBase } from "../../models/http-response-model";
+import { HttpResponseBase } from '../../models/http-response-model';
 
 export class BadRequestResponse extends HttpResponseBase {
     constructor(errorCode: string, errorDescription: string) {

@@ -1,8 +1,8 @@
-import { MeasureAttributes } from '../database/sequelize/models/measure-model';
 import { HttpResponseBase } from '../models/http-response-model';
 import MeasureRepository from '../repositories/measure-repository';
 import { BadRequestResponse } from '../utils/http-responses/bad-request-response';
 import { ConflictResponse } from '../utils/http-responses/conflict-response';
+import { NotFoundResponse } from '../utils/http-responses/not-found-response';
 import { OkResponse } from '../utils/http-responses/ok-response';
 import { imagebase64 } from '../utils/image-base-64';
 import { MeasureType } from '../utils/measure-types';
@@ -79,7 +79,7 @@ export default class MeasureService {
         const measure = await this.measureRepository.findMeasureById(measureUuid);
 
         if (!measure) {
-            return new BadRequestResponse("MEASURE_NOT_FOUND", "Leitura não encontrada.");
+            return new NotFoundResponse("MEASURE_NOT_FOUND", "Leitura não encontrada.");
         }
 
         if (measure.has_confirmed) {

@@ -1,7 +1,8 @@
-import Measure, { MeasureAttributes } from "../database/sequelize/models/measure-model";
+import Measure from '../database/sequelize/models/measure-model';
+import { IMeasure } from '../models/measure-model';
 
 export default class MeasureRepository {
-    async createMeasure(measureData: Omit<MeasureAttributes, 'id'>) {
+    async createMeasure(measureData: Omit<IMeasure, 'id'>) {
         const measure = await Measure.create(measureData);
         return measure;
     }
@@ -27,7 +28,7 @@ export default class MeasureRepository {
         });
     }
 
-    async updateMeasure(measureId: string, updates: Partial<MeasureAttributes>) {
+    async updateMeasure(measureId: string, updates: Partial<IMeasure>) {
         const measure = await Measure.findOne({ where: { id: measureId } })
         if (measure) {
             return measure.update(updates);
