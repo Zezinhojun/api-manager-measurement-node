@@ -1,30 +1,32 @@
 import Customer from '../../src/database/sequelize/models/customer-model';
 import { ICustomer } from '../../src/models/customer-model';
-import { MockCustomerRepository } from '../mocks/mockCustomer-repository';
+import CustomerRepository from '../../src/repositories/customer-repository';
 
-
-jest.mock('../../src/database/sequelize/models/customer-model.ts');
+jest.mock('../../src/database/sequelize/models/customer-model', () => ({
+    findOne: jest.fn(),
+    create: jest.fn()
+}));
 
 describe('CustomerRepository, repository', () => {
-    let customerRepository: MockCustomerRepository;
+    let customerRepository: CustomerRepository;
     const customerCode = 'C123';
     const mockCustomer: ICustomer = { customer_code: customerCode } as ICustomer;
     const customerData = { customer_code: customerCode };
 
     beforeEach(() => {
-        customerRepository = new MockCustomerRepository();
+        customerRepository = new CustomerRepository();
     });
 
     it('should find a customer by code', async () => {
-        (Customer.findOne as jest.Mock).mockResolvedValue(mockCustomer)
+        (Customer.findOne as jest.Mock).mockResolvedValue(mockCustomer);
 
         const result = await customerRepository.findCustomerByCode(customerCode);
-        console.log(result)
 
         expect(result).toEqual(mockCustomer);
         expect(Customer.findOne).toHaveBeenCalledTimes(1);
         expect(Customer.findOne).toHaveBeenCalledWith({ where: { customer_code: customerCode } });
     });
+
 
     it('should create a customer', async () => {
         (Customer.create as jest.Mock).mockResolvedValue(mockCustomer)

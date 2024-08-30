@@ -1,15 +1,21 @@
 import Measure from '../../src/database/sequelize/models/measure-model';
 import { IMeasure } from '../../src/models/measure-model';
-import { MockMeasureRepository } from '../mocks/mockMeasure-repository';
 import { customerCode, measureData, measureId, measureType, mockMeasure } from '../mocks/mockMeasure-data';
+import MeasureRepository from '../../src/repositories/measure-repository';
 
-jest.mock('../../src/database/sequelize/models/measure-model');
+jest.mock('../../src/database/sequelize/models/measure-model', () => ({
+    findOne: jest.fn(),
+    findAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+}));
+
 
 describe('MeasureRepository, repository', () => {
-    let measureRepository: MockMeasureRepository;
+    let measureRepository: MeasureRepository;
 
     beforeEach(() => {
-        measureRepository = new MockMeasureRepository();
+        measureRepository = new MeasureRepository();
 
     });
 
