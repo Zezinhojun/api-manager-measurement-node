@@ -53,6 +53,7 @@ export default class MeasureService {
             has_confirmed: false
         });
 
+
         const responseBody = {
             image_url: newMeasure.image_url,
             measure_value: parseInt(result.text),

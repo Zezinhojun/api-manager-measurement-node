@@ -1,26 +1,34 @@
-import Measure from '../database/sequelize/models/measure-model';
-import { IMeasure } from '../models/measure-model';
+import Measure from "../../src/database/sequelize/models/measure-model";
+import { IMeasure } from "../../src/models/measure-model";
+import MeasureRepository from "../../src/repositories/measure-repository";
 
-export default class MeasureRepository {
+jest.mock('../../src/database/sequelize/models/measure-model', () => ({
+    findOne: jest.fn(),
+    findAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+}));
+
+
+class MockMeasureRepository extends MeasureRepository {
     async createMeasure(measureData: Omit<IMeasure, 'id'>): Promise<Measure> {
-        return await Measure.create(measureData);
+        return Measure.create(measureData);
     }
 
     async findMeasureById(measureId: string): Promise<Measure | null> {
-        return await Measure.findOne({ where: { id: measureId } });
+        return Measure.findOne({ where: { id: measureId } });
     }
 
     async findAllMeasures(customer_code?: string, measure_type?: string): Promise<Measure[]> {
-        const query: { where?: { [key: string]: string } } = {};
+        const query: { where?: { [key: string]: string } } = {}
 
         if (customer_code) {
             query.where = { ...query.where, customer_code };
         }
 
         if (measure_type) {
-            query.where = { ...query.where, measure_type: measure_type.toUpperCase() };
+            query.where = { ...query.where, measure_type: measure_type.toLocaleUpperCase() }
         }
-
         return Measure.findAll(query);
     }
 
@@ -33,12 +41,13 @@ export default class MeasureRepository {
     }
 
     async updateMeasure(measureId: string, updates: Partial<IMeasure>): Promise<Measure> {
-        const measure = await Measure.findOne({ where: { id: measureId } })
+
+        const measure = await Measure.findOne({ where: { id: measureId } });
         if (!measure) {
-            console.log('Throwing error for measureId:', measureId); // Adicione este log
             throw new Error(`Measure with ID ${measureId} not found`);
         }
         return measure.update(updates);
     }
 }
 
+export { MockMeasureRepository };

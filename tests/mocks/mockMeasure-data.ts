@@ -12,8 +12,8 @@ export const mockMeasure: IMeasure = {
     measure_type: measureType,
     measure_datetime: new Date(),
     image_url: 'http://example.com/image.jpg',
-    has_confirmed: false
-} as IMeasure;
+    has_confirmed: false,
+};
 
 export const measureData: Omit<IMeasure, 'id'> = {
     customer_code: customerCode,
