@@ -25,7 +25,7 @@ __export(ok_response_exports, {
 module.exports = __toCommonJS(ok_response_exports);
 
 // src/models/http-response-model.ts
-var HttpResponseBase = class {
+var HttpResponse = class {
   statusCode;
   body;
   constructor(statusCode, body) {
@@ -35,7 +35,7 @@ var HttpResponseBase = class {
 };
 
 // src/utils/http-responses/ok-response.ts
-var OkResponse = class extends HttpResponseBase {
+var OkResponse = class extends HttpResponse {
   constructor(message, data) {
     super(200, { message, data });
   }

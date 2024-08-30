@@ -35,7 +35,7 @@ __export(measure_service_exports, {
 module.exports = __toCommonJS(measure_service_exports);
 
 // src/models/http-response-model.ts
-var HttpResponseBase = class {
+var HttpResponse = class {
   statusCode;
   body;
   constructor(statusCode, body) {
@@ -45,28 +45,28 @@ var HttpResponseBase = class {
 };
 
 // src/utils/http-responses/bad-request-response.ts
-var BadRequestResponse = class extends HttpResponseBase {
+var BadRequestResponse = class extends HttpResponse {
   constructor(errorCode, errorDescription) {
     super(400, { error_code: errorCode, error_description: errorDescription });
   }
 };
 
 // src/utils/http-responses/conflict-response.ts
-var ConflictResponse = class extends HttpResponseBase {
+var ConflictResponse = class extends HttpResponse {
   constructor(errorCode, errorDescription) {
     super(409, { error_code: errorCode, error_description: errorDescription });
   }
 };
 
 // src/utils/http-responses/not-found-response.ts
-var NotFoundResponse = class extends HttpResponseBase {
+var NotFoundResponse = class extends HttpResponse {
   constructor(errorCode, errorDescription) {
     super(404, { code: errorCode, description: errorDescription });
   }
 };
 
 // src/utils/http-responses/ok-response.ts
-var OkResponse = class extends HttpResponseBase {
+var OkResponse = class extends HttpResponse {
   constructor(message, data) {
     super(200, { message, data });
   }
@@ -77,14 +77,14 @@ var imagebase64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAUFBQUFBQUGBgUICAcICAsKCQkKC
 
 // src/utils/measure-utils.ts
 var MeasureUtils = class {
-  static hasDuplicateMeasurementInCurrentMonth(measurements, targetDate, targetType) {
-    const targetMonth = targetDate.getMonth() + 1;
-    const targetYear = targetDate.getFullYear();
+  static hasDuplicateForDate(measurements, targetDate, targetType) {
+    const monthOfTargetDate = targetDate.getMonth() + 1;
+    const yearOfTargetDate = targetDate.getFullYear();
     return measurements.some((measurement) => {
-      const measurementDate = new Date(measurement.measure_datetime);
-      const measurementMonth = measurementDate.getMonth() + 1;
-      const measurementYear = measurementDate.getFullYear();
-      return measurementMonth === targetMonth && measurementYear === targetYear && measurement.measure_type === targetType;
+      const dateOfMeasurement = new Date(measurement.measure_datetime);
+      const monthOfMeasurementDate = dateOfMeasurement.getMonth() + 1;
+      const yearOfMeasurementDate = dateOfMeasurement.getFullYear();
+      return monthOfMeasurementDate === monthOfTargetDate && yearOfMeasurementDate === yearOfTargetDate && measurement.measure_type === targetType;
     });
   }
 };
@@ -150,7 +150,7 @@ var MeasureService = class {
       }
     }
     const existingMeasures = await this.measureRepository.findMeasuresByCustomerCode(measureData.customer_code);
-    if (MeasureUtils.hasDuplicateMeasurementInCurrentMonth(existingMeasures, measureDate, measureData.measure_type)) {
+    if (MeasureUtils.hasDuplicateForDate(existingMeasures, measureDate, measureData.measure_type)) {
       return new ConflictResponse("DOUBLE_REPORT", "J\xE1 existe uma leitura para este tipo no m\xEAs atual");
     }
     const result = await run(imagebase64);

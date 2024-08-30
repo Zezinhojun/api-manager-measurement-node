@@ -139,11 +139,10 @@ var measure_model_default = Measure;
 // src/repositories/measure-repository.ts
 var MeasureRepository = class {
   async createMeasure(measureData) {
-    const measure = await measure_model_default.create(measureData);
-    return measure;
+    return await measure_model_default.create(measureData);
   }
   async findMeasureById(measureId) {
-    return measure_model_default.findOne({ where: { id: measureId } });
+    return await measure_model_default.findOne({ where: { id: measureId } });
   }
   async findAllMeasures(customer_code, measure_type) {
     const query = {};
@@ -156,18 +155,17 @@ var MeasureRepository = class {
     return measure_model_default.findAll(query);
   }
   async findMeasuresByCustomerCode(customerCode, measureType) {
-    return measure_model_default.findAll({
-      where: {
-        customer_code: customerCode,
-        ...measureType ? { measure_type: measureType.toUpperCase() } : {}
-      }
-    });
+    const where = {
+      customer_code: customerCode,
+      ...measureType ? { measure_type: measureType.toUpperCase() } : {}
+    };
+    return measure_model_default.findAll({ where });
   }
   async updateMeasure(measureId, updates) {
     const measure = await measure_model_default.findOne({ where: { id: measureId } });
     if (measure) {
       return measure.update(updates);
     }
-    throw new Error("Measure not found");
+    throw new Error(`Measure with ID ${measureId} not found`);
   }
 };

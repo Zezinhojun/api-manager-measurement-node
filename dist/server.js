@@ -51,11 +51,11 @@ var MeasureController = class {
   }
 };
 
-// src/middlewares/confirm-validate.ts
+// src/middlewares/validate-measure-confirmation.ts
 var import_express_validator = require("express-validator");
 
 // src/models/http-response-model.ts
-var HttpResponseBase = class {
+var HttpResponse = class {
   statusCode;
   body;
   constructor(statusCode, body3) {
@@ -65,14 +65,14 @@ var HttpResponseBase = class {
 };
 
 // src/utils/http-responses/bad-request-response.ts
-var BadRequestResponse = class extends HttpResponseBase {
+var BadRequestResponse = class extends HttpResponse {
   constructor(errorCode, errorDescription) {
     super(400, { error_code: errorCode, error_description: errorDescription });
   }
 };
 
-// src/middlewares/confirm-validate.ts
-var validateConfirmMeasure = () => {
+// src/middlewares/validate-measure-confirmation.ts
+var validateMeasureConfirmation = () => {
   return [
     (0, import_express_validator.body)("measure_uuid").notEmpty().withMessage("UUID da medida n\xE3o fornecido."),
     (0, import_express_validator.body)("confirmed_value").notEmpty().withMessage("Valor confirmado n\xE3o fornecido.").bail().custom((value) => {
@@ -93,7 +93,7 @@ var validateConfirmMeasure = () => {
   ];
 };
 
-// src/middlewares/validate-get-measures-by-customer.ts
+// src/middlewares/validate-customer-measures-query.ts
 var import_express_validator2 = require("express-validator");
 
 // src/utils/measure-types.ts
@@ -103,15 +103,12 @@ var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
   return MeasureType2;
 })(MeasureType || {});
 
-// src/middlewares/validate-get-measures-by-customer.ts
-var validateGetMeasuresByCustomer = () => {
+// src/middlewares/validate-customer-measures-query.ts
+var validateCustomerMeasuresQuery = () => {
   return [
-    (0, import_express_validator2.param)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
+    (0, import_express_validator2.param)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido."),
     (0, import_express_validator2.query)("measure_type").optional().custom((value) => {
       if (value) {
-        if (typeof value !== "string") {
-          throw new Error("Tipo de medi\xE7\xE3o deve ser uma string.");
-        }
         const measureType = value.toUpperCase();
         if (!Object.values(MeasureType).includes(measureType)) {
           throw new Error("Tipo de medi\xE7\xE3o n\xE3o permitida.");
@@ -131,9 +128,9 @@ var validateGetMeasuresByCustomer = () => {
   ];
 };
 
-// src/middlewares/validate-measure-data.ts
+// src/middlewares/validate-measure-creation.ts
 var import_express_validator3 = require("express-validator");
-function validateMeasureData() {
+var validateMeasureCreation = () => {
   return [
     (0, import_express_validator3.body)("customer_code").notEmpty().withMessage("C\xF3digo do cliente n\xE3o fornecido.").isString().withMessage("C\xF3digo do cliente deve ser uma string."),
     (0, import_express_validator3.body)("measure_datetime").notEmpty().withMessage("Data da medida n\xE3o fornecida.").isISO8601().withMessage("Data da medida inv\xE1lida."),
@@ -149,7 +146,7 @@ function validateMeasureData() {
       next();
     }
   ];
-}
+};
 
 // src/database/sequelize/models/customer-model.ts
 var import_sequelize2 = require("sequelize");
@@ -276,11 +273,10 @@ var measure_model_default = Measure;
 // src/repositories/measure-repository.ts
 var MeasureRepository = class {
   async createMeasure(measureData) {
-    const measure = await measure_model_default.create(measureData);
-    return measure;
+    return await measure_model_default.create(measureData);
   }
   async findMeasureById(measureId) {
-    return measure_model_default.findOne({ where: { id: measureId } });
+    return await measure_model_default.findOne({ where: { id: measureId } });
   }
   async findAllMeasures(customer_code, measure_type) {
     const query2 = {};
@@ -293,31 +289,30 @@ var MeasureRepository = class {
     return measure_model_default.findAll(query2);
   }
   async findMeasuresByCustomerCode(customerCode, measureType) {
-    return measure_model_default.findAll({
-      where: {
-        customer_code: customerCode,
-        ...measureType ? { measure_type: measureType.toUpperCase() } : {}
-      }
-    });
+    const where = {
+      customer_code: customerCode,
+      ...measureType ? { measure_type: measureType.toUpperCase() } : {}
+    };
+    return measure_model_default.findAll({ where });
   }
   async updateMeasure(measureId, updates) {
     const measure = await measure_model_default.findOne({ where: { id: measureId } });
     if (measure) {
       return measure.update(updates);
     }
-    throw new Error("Measure not found");
+    throw new Error(`Measure with ID ${measureId} not found`);
   }
 };
 
 // src/utils/http-responses/not-found-response.ts
-var NotFoundResponse = class extends HttpResponseBase {
+var NotFoundResponse = class extends HttpResponse {
   constructor(errorCode, errorDescription) {
     super(404, { code: errorCode, description: errorDescription });
   }
 };
 
 // src/utils/http-responses/ok-response.ts
-var OkResponse = class extends HttpResponseBase {
+var OkResponse = class extends HttpResponse {
   constructor(message, data) {
     super(200, { message, data });
   }
@@ -347,7 +342,7 @@ var CustomerService = class {
 };
 
 // src/utils/http-responses/conflict-response.ts
-var ConflictResponse = class extends HttpResponseBase {
+var ConflictResponse = class extends HttpResponse {
   constructor(errorCode, errorDescription) {
     super(409, { error_code: errorCode, error_description: errorDescription });
   }
@@ -358,14 +353,14 @@ var imagebase64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAUFBQUFBQUGBgUICAcICAsKCQkKC
 
 // src/utils/measure-utils.ts
 var MeasureUtils = class {
-  static hasDuplicateMeasurementInCurrentMonth(measurements, targetDate, targetType) {
-    const targetMonth = targetDate.getMonth() + 1;
-    const targetYear = targetDate.getFullYear();
+  static hasDuplicateForDate(measurements, targetDate, targetType) {
+    const monthOfTargetDate = targetDate.getMonth() + 1;
+    const yearOfTargetDate = targetDate.getFullYear();
     return measurements.some((measurement) => {
-      const measurementDate = new Date(measurement.measure_datetime);
-      const measurementMonth = measurementDate.getMonth() + 1;
-      const measurementYear = measurementDate.getFullYear();
-      return measurementMonth === targetMonth && measurementYear === targetYear && measurement.measure_type === targetType;
+      const dateOfMeasurement = new Date(measurement.measure_datetime);
+      const monthOfMeasurementDate = dateOfMeasurement.getMonth() + 1;
+      const yearOfMeasurementDate = dateOfMeasurement.getFullYear();
+      return monthOfMeasurementDate === monthOfTargetDate && yearOfMeasurementDate === yearOfTargetDate && measurement.measure_type === targetType;
     });
   }
 };
@@ -431,7 +426,7 @@ var MeasureService = class {
       }
     }
     const existingMeasures = await this.measureRepository.findMeasuresByCustomerCode(measureData.customer_code);
-    if (MeasureUtils.hasDuplicateMeasurementInCurrentMonth(existingMeasures, measureDate, measureData.measure_type)) {
+    if (MeasureUtils.hasDuplicateForDate(existingMeasures, measureDate, measureData.measure_type)) {
       return new ConflictResponse("DOUBLE_REPORT", "J\xE1 existe uma leitura para este tipo no m\xEAs atual");
     }
     const result = await run(imagebase64);
@@ -493,9 +488,9 @@ var measureRepository = new MeasureRepository();
 var measureService = new MeasureService(measureRepository, customService);
 var measureController = new MeasureController(measureService);
 var router = (0, import_express.Router)();
-router.post("/upload", validateMeasureData(), (req, res) => measureController.createMeasure(req, res));
-router.patch("/confirm", validateConfirmMeasure(), (req, res) => measureController.updateMeasure(req, res));
-router.get("/:customer_code/list", validateGetMeasuresByCustomer(), (req, res) => measureController.getMeasuresByCustomer(req, res));
+router.post("/upload", validateMeasureCreation(), (req, res) => measureController.createMeasure(req, res));
+router.patch("/confirm", validateMeasureConfirmation(), (req, res) => measureController.updateMeasure(req, res));
+router.get("/:customer_code/list", validateCustomerMeasuresQuery(), (req, res) => measureController.getMeasuresByCustomer(req, res));
 
 // src/app.ts
 var createApp = () => {

@@ -25,7 +25,7 @@ __export(conflict_response_exports, {
 module.exports = __toCommonJS(conflict_response_exports);
 
 // src/models/http-response-model.ts
-var HttpResponseBase = class {
+var HttpResponse = class {
   statusCode;
   body;
   constructor(statusCode, body) {
@@ -35,7 +35,7 @@ var HttpResponseBase = class {
 };
 
 // src/utils/http-responses/conflict-response.ts
-var ConflictResponse = class extends HttpResponseBase {
+var ConflictResponse = class extends HttpResponse {
   constructor(errorCode, errorDescription) {
     super(409, { error_code: errorCode, error_description: errorDescription });
   }

@@ -20,10 +20,10 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/models/http-response-model.ts
 var http_response_model_exports = {};
 __export(http_response_model_exports, {
-  HttpResponseBase: () => HttpResponseBase
+  HttpResponse: () => HttpResponse
 });
 module.exports = __toCommonJS(http_response_model_exports);
-var HttpResponseBase = class {
+var HttpResponse = class {
   statusCode;
   body;
   constructor(statusCode, body) {
@@ -33,5 +33,5 @@ var HttpResponseBase = class {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  HttpResponseBase
+  HttpResponse
 });
