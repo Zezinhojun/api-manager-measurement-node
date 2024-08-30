@@ -1,27 +1,33 @@
-import express from 'express'
-import MeasureService from '../../src/services/measure-service';
+import { Express } from 'express';
+
 import { MeasureType } from '../../src/utils/measure-types';
+import { MockCustomerRepository } from '../mocks/mockCustomer-repository';
+import MockCustomerService from '../mocks/mockCustomer-service';
+import { MockMeasureRepository } from '../mocks/mockMeasure-repository';
+import { MockMeasureService } from '../mocks/mockMeasure-service';
 import { createMockResponse, sendRequest, setupApp } from '../test-utils/controller-utils';
 
 describe('MeasureController', () => {
-    let app: express.Express;
-    let measureService: jest.Mocked<MeasureService>;
+    let app: Express
+    let mockMeasureService: MockMeasureService
+    let mockMeasureRepository: MockMeasureRepository
+    let mockCustomerService: MockCustomerService
+    let mockCustomerRepository: MockCustomerRepository
 
     beforeEach(() => {
-        measureService = {
-            createMeasure: jest.fn(),
-            updateMeasure: jest.fn(),
-            getMeasuresByCustomer: jest.fn(),
-        } as unknown as jest.Mocked<MeasureService>;
 
-        app = setupApp(measureService);
+        mockMeasureRepository = new MockMeasureRepository()
+        mockCustomerRepository = new MockCustomerRepository()
+        mockCustomerService = new MockCustomerService(mockCustomerRepository)
+        mockMeasureService = new MockMeasureService(mockMeasureRepository, mockCustomerService)
+        app = setupApp(mockMeasureService);
     });
 
     it('should create a measure with status 201', async () => {
         const measureData = { someField: 'someValue' };
         const mockResponse = createMockResponse(201, { id: '123', ...measureData });
 
-        measureService.createMeasure.mockResolvedValue(mockResponse);
+        mockMeasureService.registerMeasure.mockResolvedValue(mockResponse);
 
         await sendRequest(app, 'post', '/upload', measureData, {}, 201, mockResponse.body);
     });
@@ -31,7 +37,7 @@ describe('MeasureController', () => {
         const confirmedValue = 'newValue';
         const mockResponse = createMockResponse(200, { id: measureId, confirmed_value: confirmedValue });
 
-        measureService.updateMeasure.mockResolvedValue(mockResponse);
+        mockMeasureService.markMeasureAsConfirmed.mockResolvedValue(mockResponse);
 
         await sendRequest(app, 'patch', '/confirm', { measure_uuid: measureId, confirmed_value: confirmedValue }, {}, 200, mockResponse.body);
     });
@@ -41,7 +47,7 @@ describe('MeasureController', () => {
         const measureType: MeasureType = MeasureType.GAS;
         const mockResponse = createMockResponse(200, [{ id: '123', type: measureType }]);
 
-        measureService.getMeasuresByCustomer.mockResolvedValue(mockResponse);
+        mockMeasureService.fetchMeasuresByCustomer.mockResolvedValue(mockResponse);
 
         await sendRequest(app, 'get', `/${customerCode}/list`, {}, { measure_type: measureType }, 200, mockResponse.body);
     });

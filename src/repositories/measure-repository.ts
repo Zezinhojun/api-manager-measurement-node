@@ -32,7 +32,7 @@ export default class MeasureRepository {
         return Measure.findAll({ where });
     }
 
-    async updateMeasure(measureId: string, updates: Partial<IMeasure>): Promise<Measure> {
+    async markMeasureAsConfirmed(measureId: string, updates: Partial<IMeasure>): Promise<Measure> {
         const measure = await Measure.findOne({ where: { id: measureId } })
         if (!measure) {
             console.log('Throwing error for measureId:', measureId); // Adicione este log

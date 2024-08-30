@@ -6,7 +6,7 @@ class MockMeasureRepository extends MeasureRepository {
     findMeasureById = jest.fn()
     findAllMeasures = jest.fn()
     findMeasuresByCustomerCode = jest.fn()
-    updateMeasure = jest.fn()
+    markMeasureAsConfirmed = jest.fn()
 }
 
 export { MockMeasureRepository };

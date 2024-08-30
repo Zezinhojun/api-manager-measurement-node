@@ -4,7 +4,6 @@ import { BadRequestResponse } from '../utils/http-responses/bad-request-response
 import { ConflictResponse } from '../utils/http-responses/conflict-response';
 import { NotFoundResponse } from '../utils/http-responses/not-found-response';
 import { OkResponse } from '../utils/http-responses/ok-response';
-import { imagebase64 } from '../utils/image-base-64';
 import { MeasureType } from '../utils/measure-types';
 import { MeasureUtils } from '../utils/measure-utils';
 import { CustomerService } from './customer-service';
@@ -22,7 +21,7 @@ export default class MeasureService {
         readonly measureRepository: MeasureRepository,
         readonly customerService: CustomerService) { }
 
-    async createMeasure(measureData: MeasureData): Promise<HttpResponse> {
+    async registerMeasure(measureData: MeasureData): Promise<HttpResponse> {
         const measureDate = new Date(measureData.measure_datetime);
 
         if (isNaN(measureDate.getTime())) {
@@ -64,11 +63,11 @@ export default class MeasureService {
 
     }
 
-    async getMeasure(measureId: string) {
+    async fetchMeasureById(measureId: string) {
         return this.measureRepository.findMeasureById(measureId)
     }
 
-    async getMeasuresByCustomer(customerCode: string, measureType?: MeasureType) {
+    async fetchMeasuresByCustomer(customerCode: string, measureType?: MeasureType) {
         const customer = await this.customerService.getCustomerByCode(customerCode)
 
         if (!customer) {
@@ -94,7 +93,7 @@ export default class MeasureService {
         return new OkResponse("Operação realizada com sucesso", responseBody);
     }
 
-    async updateMeasure(measureUuid: string, confirmedValue: number) {
+    async markMeasureAsConfirmed(measureUuid: string, confirmedValue: number) {
         const measure = await this.measureRepository.findMeasureById(measureUuid);
         if (!measure) {
             return new NotFoundResponse("MEASURE_NOT_FOUND", "Leitura não encontrada.");
@@ -102,7 +101,7 @@ export default class MeasureService {
         if (measure.has_confirmed) {
             return new ConflictResponse("CONFIRMATION_DUPLICATE", "Leitura do mês já realizada.");
         }
-        await this.measureRepository.updateMeasure(measure.id, { has_confirmed: true });
+        await this.measureRepository.markMeasureAsConfirmed(measure.id, { has_confirmed: true });
 
         return new OkResponse("Operação realizada com sucesso.", { success: true });
     }

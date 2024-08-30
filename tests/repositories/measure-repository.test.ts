@@ -73,7 +73,7 @@ describe('MeasureRepository, repository', () => {
         (Measure.update as jest.Mock).mockResolvedValue(updates);
 
 
-        const result = await measureRepository.updateMeasure(measureId, updates);
+        const result = await measureRepository.markMeasureAsConfirmed(measureId, updates);
 
         console.log(result)
 
