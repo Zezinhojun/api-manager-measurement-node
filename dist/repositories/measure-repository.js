@@ -163,9 +163,10 @@ var MeasureRepository = class {
   }
   async updateMeasure(measureId, updates) {
     const measure = await measure_model_default.findOne({ where: { id: measureId } });
-    if (measure) {
-      return measure.update(updates);
+    if (!measure) {
+      console.log("Throwing error for measureId:", measureId);
+      throw new Error(`Measure with ID ${measureId} not found`);
     }
-    throw new Error(`Measure with ID ${measureId} not found`);
+    return measure.update(updates);
   }
 };

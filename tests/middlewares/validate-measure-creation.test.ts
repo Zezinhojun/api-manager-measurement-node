@@ -10,6 +10,10 @@ const app = setupApp(validateMeasureCreation, '/test', 'post', (req: Request, re
 
 const assertErrorResponse = createAssertErrorResponse(app, '/test', 'post');
 
+const image64 = {
+    withPrefix: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    withOutPrefix: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
+}
 const errorMessages = {
     missingCustomerCode: {
         error_code: 'INVALID_DATA',
@@ -38,6 +42,10 @@ const errorMessages = {
     missingImage: {
         error_code: 'INVALID_DATA',
         error_description: 'Imagem não fornecida.'
+    },
+    invalidImage: {
+        error_code: 'INVALID_DATA',
+        error_description: 'Imagem Base64 inválida.'
     }
 };
 
@@ -66,16 +74,21 @@ describe('validateMeasureCreation, middleware', () => {
         );
     });
 
+    it('should return 400 for an invalid base64 image', async () => {
+        await assertErrorResponse(
+            errorMessages.invalidImage,
+            { customer_code: 'some-code', measure_datetime: '2024-11-23T14:20:00.000Z', measure_type: 'GAS', image: "invalidImage" }
+        )
+    });
+
     it('should return 400 for invalid measure_type', async () => {
         await assertErrorResponse(
             errorMessages.missingMeasureType,
             { customer_code: 'some-code', measure_datetime: '2024-11-23T14:20:00.000Z', image: 'image-url' },
         );
-
         await assertErrorResponse(
             errorMessages.invalidMeasureType,
             { customer_code: 'some-code', measure_datetime: '2024-11-23T14:20:00.000Z', measure_type: 'INVALID_TYPE', image: 'image-url' },
-
         );
     });
 
@@ -89,9 +102,39 @@ describe('validateMeasureCreation, middleware', () => {
     it('should pass validation if all fields are valid', async () => {
         const response = await request(app)
             .post('/test')
-            .send({ customer_code: 'some-code', measure_datetime: '2024-11-23T14:20:00.000Z', measure_type: 'GAS', image: 'image-url' });
+            .send({ customer_code: 'some-code', measure_datetime: '2024-11-23T14:20:00.000Z', measure_type: 'GAS', image: image64.withPrefix });
 
         expect(response.status).toBe(200);
         expect(response.text).toBe('Success');
     });
+
+    it('should pass validation if a valid base64 image with prefix', async () => {
+        const response = await request(app)
+            .post('/test')
+            .send({
+                customer_code: 'some-code',
+                measure_datetime: '2024-11-23T14:20:00.000Z',
+                measure_type: 'GAS',
+                image: image64.withPrefix
+            });
+
+        expect(response.status).toBe(200);
+        expect(response.text).toBe('Success');
+    });
+
+    it('should pass validation if a valid base64 image without prefix', async () => {
+        const response = await request(app)
+            .post('/test')
+            .send({
+                customer_code: 'some-code',
+                measure_datetime: '2024-11-23T14:20:00.000Z',
+                measure_type: 'GAS',
+                image: image64.withOutPrefix
+            });
+
+        expect(response.status).toBe(200);
+        expect(response.text).toBe('Success');
+    });
+
+
 })

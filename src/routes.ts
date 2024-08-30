@@ -1,8 +1,8 @@
 import { Request, Response, Router } from 'express';
 
 import { MeasureController } from './controllers/measure-controller';
-import { validateMeasureConfirmation } from './middlewares/validate-measure-confirmation';
 import { validateCustomerMeasuresQuery } from './middlewares/validate-customer-measures-query';
+import { validateMeasureConfirmation } from './middlewares/validate-measure-confirmation';
 import { validateMeasureCreation } from './middlewares/validate-measure-creation';
 import CustomerRepository from './repositories/customer-repository';
 import MeasureRepository from './repositories/measure-repository';

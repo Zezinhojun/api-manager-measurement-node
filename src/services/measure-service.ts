@@ -43,7 +43,7 @@ export default class MeasureService {
         if (MeasureUtils.hasDuplicateForDate(existingMeasures, measureDate, measureData.measure_type)) {
             return new ConflictResponse("DOUBLE_REPORT", "Já existe uma leitura para este tipo no mês atual");
         }
-        const result = await run(imagebase64)
+        const result = await run(measureData.image)
 
         const newMeasure = await this.measureRepository.createMeasure({
             customer_code: measureData.customer_code,
