@@ -35,7 +35,6 @@ export default class MeasureRepository {
     async markMeasureAsConfirmed(measureId: string, updates: Partial<IMeasure>): Promise<Measure> {
         const measure = await Measure.findOne({ where: { id: measureId } })
         if (!measure) {
-            console.log('Throwing error for measureId:', measureId); // Adicione este log
             throw new Error(`Measure with ID ${measureId} not found`);
         }
         return measure.update(updates);

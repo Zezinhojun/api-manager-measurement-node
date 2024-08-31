@@ -22,3 +22,10 @@ export const measureData: Omit<IMeasure, 'id'> = {
     image_url: 'http://example.com/image.jpg',
     has_confirmed: false
 };
+
+export const measureCreateData = {
+    image: 'base64::image',
+    customer_code: '123',
+    measure_datetime: '2024-08-30T00:00:00Z',
+    measure_type: MeasureType.GAS
+};

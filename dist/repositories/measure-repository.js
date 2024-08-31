@@ -161,10 +161,9 @@ var MeasureRepository = class {
     };
     return measure_model_default.findAll({ where });
   }
-  async updateMeasure(measureId, updates) {
+  async markMeasureAsConfirmed(measureId, updates) {
     const measure = await measure_model_default.findOne({ where: { id: measureId } });
     if (!measure) {
-      console.log("Throwing error for measureId:", measureId);
       throw new Error(`Measure with ID ${measureId} not found`);
     }
     return measure.update(updates);

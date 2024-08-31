@@ -15,21 +15,11 @@ describe('MeasureController', () => {
     let mockCustomerRepository: MockCustomerRepository
 
     beforeEach(() => {
-
         mockMeasureRepository = new MockMeasureRepository()
         mockCustomerRepository = new MockCustomerRepository()
         mockCustomerService = new MockCustomerService(mockCustomerRepository)
         mockMeasureService = new MockMeasureService(mockMeasureRepository, mockCustomerService)
         app = setupApp(mockMeasureService);
-    });
-
-    it('should create a measure with status 201', async () => {
-        const measureData = { someField: 'someValue' };
-        const mockResponse = createMockResponse(201, { id: '123', ...measureData });
-
-        mockMeasureService.registerMeasure.mockResolvedValue(mockResponse);
-
-        await sendRequest(app, 'post', '/upload', measureData, {}, 201, mockResponse.body);
     });
 
     it('should update a measure with status 200', async () => {
@@ -51,4 +41,16 @@ describe('MeasureController', () => {
 
         await sendRequest(app, 'get', `/${customerCode}/list`, {}, { measure_type: measureType }, 200, mockResponse.body);
     });
+
+    it('should create a measure with status 200', async () => {
+        const measureData = { someField: 'someValue' };
+        const mockResponse = createMockResponse(200, { id: '123', ...measureData });
+
+        mockMeasureService.registerMeasure.mockResolvedValue(mockResponse);
+
+        await sendRequest(app, 'post', '/upload', measureData, {}, 200, mockResponse.body);
+    });
+
+
+
 });

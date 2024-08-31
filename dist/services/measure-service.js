@@ -72,6 +72,13 @@ var OkResponse = class extends HttpResponse {
   }
 };
 
+// src/utils/measure-types.ts
+var MeasureType = /* @__PURE__ */ ((MeasureType2) => {
+  MeasureType2["WATER"] = "WATER";
+  MeasureType2["GAS"] = "GAS";
+  return MeasureType2;
+})(MeasureType || {});
+
 // src/utils/measure-utils.ts
 var MeasureUtils = class {
   static hasDuplicateForDate(measurements, targetDate, targetType) {
@@ -90,9 +97,9 @@ var MeasureUtils = class {
 var import_generative_ai = require("@google/generative-ai");
 var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
-var genAi = new import_generative_ai.GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
-var imageStoragePath = import_path.default.join("/app/images");
-function fileToGenerativePart(base64, mimeType) {
+var generativeAIClient = new import_generative_ai.GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+var imageStorageDirectory = import_path.default.join("/app/images");
+function createGenerativeAIInput(base64, mimeType) {
   return {
     inlineData: {
       data: base64,
@@ -100,21 +107,21 @@ function fileToGenerativePart(base64, mimeType) {
     }
   };
 }
-function removeDataPrefix(base64Image) {
+function stripBase64Prefix(base64Image) {
   if (base64Image.startsWith("data:image/")) {
     return base64Image.split(",")[1];
   }
   return base64Image;
 }
-async function run(base64) {
+async function processImage(base64) {
   try {
-    const model = genAi.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = generativeAIClient.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = "retornar o valor da conta no seguinte formato: integer ou number,";
-    const base64WithoutPrefix = removeDataPrefix(base64);
-    const imageParts = [fileToGenerativePart(base64WithoutPrefix, "image/jpeg")];
+    const base64WithoutPrefix = stripBase64Prefix(base64);
+    const imageParts = [createGenerativeAIInput(base64WithoutPrefix, "image/jpeg")];
     const result = await model.generateContent([prompt, ...imageParts]);
     const response = result.response;
-    const text = await response.text();
+    const text = response.text();
     const imageFilename = "image_" + Date.now() + ".jpg";
     const imageUrl = await saveImage(base64WithoutPrefix, imageFilename);
     return { text, imageUrl };
@@ -125,15 +132,9 @@ async function run(base64) {
 }
 async function saveImage(base64Image, imageFilename) {
   const imageBuffer = Buffer.from(base64Image, "base64");
-  const imagePath = import_path.default.join(imageStoragePath, imageFilename);
-  import_fs.default.mkdir(import_path.default.dirname(imagePath), { recursive: true }, (err) => {
-    if (err)
-      return console.error("Error creating directory:", err);
-    import_fs.default.writeFile(imagePath, imageBuffer, (err2) => {
-      if (err2)
-        return console.error("Error saving image:", err2);
-    });
-  });
+  const imagePath = import_path.default.join(imageStorageDirectory, imageFilename);
+  await import_fs.default.promises.mkdir(import_path.default.dirname(imagePath), { recursive: true });
+  await import_fs.default.promises.writeFile(imagePath, imageBuffer);
   return `http://localhost:3000/files/${imageFilename}`;
 }
 
@@ -143,23 +144,21 @@ var MeasureService = class {
     this.measureRepository = measureRepository;
     this.customerService = customerService;
   }
-  async createMeasure(measureData) {
+  async registerMeasure(measureData) {
     const measureDate = new Date(measureData.measure_datetime);
-    if (isNaN(measureDate.getTime())) {
-      return new BadRequestResponse("INVALID_DATA", "Data da medida inv\xE1lida ali.");
-    }
+    if (isNaN(measureDate.getTime()))
+      return new BadRequestResponse("INVALID_DATA", "Data da medida inv\xE1lida.");
     const customerResponse = await this.customerService.getCustomerByCode(measureData.customer_code);
     if (customerResponse.statusCode === 404) {
       const createCustomerResponse = await this.customerService.createCustomer({ customer_code: measureData.customer_code });
-      if (createCustomerResponse.statusCode !== 200) {
+      if (createCustomerResponse.statusCode !== 200)
         return new BadRequestResponse("INVALID_CUSTOMER", "N\xE3o foi poss\xEDvel criar o cliente.");
-      }
     }
     const existingMeasures = await this.measureRepository.findMeasuresByCustomerCode(measureData.customer_code);
     if (MeasureUtils.hasDuplicateForDate(existingMeasures, measureDate, measureData.measure_type)) {
-      return new ConflictResponse("DOUBLE_REPORT", "J\xE1 existe uma leitura para este tipo no m\xEAs atual");
+      return new ConflictResponse("DOUBLE_REPORT", "Leitura do m\xEAs j\xE1 realizada");
     }
-    const result = await run(measureData.image);
+    const result = await processImage(measureData.image);
     const newMeasure = await this.measureRepository.createMeasure({
       customer_code: measureData.customer_code,
       measure_datetime: measureDate,
@@ -174,21 +173,23 @@ var MeasureService = class {
     };
     return new OkResponse("Opera\xE7\xE3o realizada com sucesso", responseBody);
   }
-  async getMeasure(measureId) {
+  async fetchMeasureById(measureId) {
     return this.measureRepository.findMeasureById(measureId);
   }
-  async getMeasuresByCustomer(customerCode, measureType) {
+  async fetchMeasuresByCustomer(customerCode, measureType) {
+    if (measureType && !Object.values(MeasureType).includes(measureType))
+      return new BadRequestResponse("INVALID_TYPE", "Tipo de medi\xE7\xE3o n\xE3o permitida");
     const customer = await this.customerService.getCustomerByCode(customerCode);
-    if (!customer) {
+    if (!customer)
       return new NotFoundResponse("MEASURE_NOT_FOUND", "Nenhuma leitura encontrada.");
-    }
-    const measures = await this.measureRepository.findAllMeasures(customerCode, measureType);
-    if (!measures.length) {
+    const measures = await this.measureRepository.findAllMeasures(customerCode);
+    const filteredMeasures = measureType ? measures.filter((measure) => measure.measure_type === measureType) : measures;
+    if (!filteredMeasures.length) {
       return new NotFoundResponse("MEASURES_NOT_FOUND", "Nenhuma leitura encontrada.");
     }
     const responseBody = {
       customer_code: customerCode,
-      measures: measures.map((measure) => ({
+      measures: filteredMeasures.map((measure) => ({
         measure_uuid: measure.id,
         measure_datetime: measure.measure_datetime,
         measure_type: measure.measure_type,
@@ -198,15 +199,15 @@ var MeasureService = class {
     };
     return new OkResponse("Opera\xE7\xE3o realizada com sucesso", responseBody);
   }
-  async updateMeasure(measureUuid, confirmedValue) {
+  async markMeasureAsConfirmed(measureUuid, confirmedValue) {
+    if (!measureUuid || isNaN(confirmedValue))
+      return new BadRequestResponse("INVALID_DATA", "Dados fornecidos s\xE3o inv\xE1lidos.");
     const measure = await this.measureRepository.findMeasureById(measureUuid);
-    if (!measure) {
-      return new NotFoundResponse("MEASURE_NOT_FOUND", "Leitura n\xE3o encontrada.");
-    }
-    if (measure.has_confirmed) {
+    if (!measure)
+      return new NotFoundResponse("MEASURE_NOT_FOUND", "Leitura do m\xEAs j\xE1 realizada.");
+    if (measure.has_confirmed)
       return new ConflictResponse("CONFIRMATION_DUPLICATE", "Leitura do m\xEAs j\xE1 realizada.");
-    }
-    await this.measureRepository.updateMeasure(measure.id, { has_confirmed: true });
+    await this.measureRepository.markMeasureAsConfirmed(measure.id, { has_confirmed: true });
     return new OkResponse("Opera\xE7\xE3o realizada com sucesso.", { success: true });
   }
 };

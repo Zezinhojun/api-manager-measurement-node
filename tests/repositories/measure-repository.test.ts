@@ -10,7 +10,6 @@ jest.mock('../../src/database/sequelize/models/measure-model', () => ({
     update: jest.fn(),
 }));
 
-
 describe('MeasureRepository, repository', () => {
     let measureRepository: MeasureRepository;
 
@@ -21,8 +20,7 @@ describe('MeasureRepository, repository', () => {
 
     it('should create a measure', async () => {
         (Measure.create as jest.Mock).mockResolvedValue(mockMeasure);
-        const result = await measureRepository.createMeasure(measureData);
-        console.log(result)
+        const result = await measureRepository.createMeasure(measureData)
 
         expect(result).toEqual(mockMeasure);
         expect(Measure.create).toHaveBeenCalledTimes(1);
@@ -40,7 +38,6 @@ describe('MeasureRepository, repository', () => {
 
     it('should return null if measure not found by ID', async () => {
         (Measure.findOne as jest.Mock).mockResolvedValue(null);
-
         const result = await measureRepository.findMeasureById(measureId);
 
         expect(result).toBeNull();
@@ -71,11 +68,7 @@ describe('MeasureRepository, repository', () => {
         };
         (Measure.findOne as jest.Mock).mockResolvedValue(mockMeasure);
         (Measure.update as jest.Mock).mockResolvedValue(updates);
-
-
         const result = await measureRepository.markMeasureAsConfirmed(measureId, updates);
-
-        console.log(result)
 
         expect(Measure.findOne).toHaveBeenCalledWith({ where: { id: measureId } });
         expect(mockMeasure.update).toHaveBeenCalledWith(updates);

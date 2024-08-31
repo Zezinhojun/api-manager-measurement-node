@@ -30,15 +30,15 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/services/gemini-service.ts
 var gemini_service_exports = {};
 __export(gemini_service_exports, {
-  run: () => run
+  processImage: () => processImage
 });
 module.exports = __toCommonJS(gemini_service_exports);
 var import_generative_ai = require("@google/generative-ai");
 var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
-var genAi = new import_generative_ai.GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
-var imageStoragePath = import_path.default.join("/app/images");
-function fileToGenerativePart(base64, mimeType) {
+var generativeAIClient = new import_generative_ai.GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+var imageStorageDirectory = import_path.default.join("/app/images");
+function createGenerativeAIInput(base64, mimeType) {
   return {
     inlineData: {
       data: base64,
@@ -46,21 +46,21 @@ function fileToGenerativePart(base64, mimeType) {
     }
   };
 }
-function removeDataPrefix(base64Image) {
+function stripBase64Prefix(base64Image) {
   if (base64Image.startsWith("data:image/")) {
     return base64Image.split(",")[1];
   }
   return base64Image;
 }
-async function run(base64) {
+async function processImage(base64) {
   try {
-    const model = genAi.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = generativeAIClient.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = "retornar o valor da conta no seguinte formato: integer ou number,";
-    const base64WithoutPrefix = removeDataPrefix(base64);
-    const imageParts = [fileToGenerativePart(base64WithoutPrefix, "image/jpeg")];
+    const base64WithoutPrefix = stripBase64Prefix(base64);
+    const imageParts = [createGenerativeAIInput(base64WithoutPrefix, "image/jpeg")];
     const result = await model.generateContent([prompt, ...imageParts]);
     const response = result.response;
-    const text = await response.text();
+    const text = response.text();
     const imageFilename = "image_" + Date.now() + ".jpg";
     const imageUrl = await saveImage(base64WithoutPrefix, imageFilename);
     return { text, imageUrl };
@@ -71,18 +71,12 @@ async function run(base64) {
 }
 async function saveImage(base64Image, imageFilename) {
   const imageBuffer = Buffer.from(base64Image, "base64");
-  const imagePath = import_path.default.join(imageStoragePath, imageFilename);
-  import_fs.default.mkdir(import_path.default.dirname(imagePath), { recursive: true }, (err) => {
-    if (err)
-      return console.error("Error creating directory:", err);
-    import_fs.default.writeFile(imagePath, imageBuffer, (err2) => {
-      if (err2)
-        return console.error("Error saving image:", err2);
-    });
-  });
+  const imagePath = import_path.default.join(imageStorageDirectory, imageFilename);
+  await import_fs.default.promises.mkdir(import_path.default.dirname(imagePath), { recursive: true });
+  await import_fs.default.promises.writeFile(imagePath, imageBuffer);
   return `http://localhost:3000/files/${imageFilename}`;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  run
+  processImage
 });
