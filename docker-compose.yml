@@ -1,35 +1,35 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:latest
-    container_name: postgres_container
-    environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    postgres:
+        image: postgres:latest
+        container_name: postgres_container
+        environment:
+            POSTGRES_USER: myuser
+            POSTGRES_PASSWORD: mypassword
+            POSTGRES_DB: mydatabase
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        ports:
+            - '5432:5432'
 
-  api:
-    build: .
-    container_name: api-shopper-gemini-container
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - DB_HOST=postgres
-      - DB_USER=myuser
-      - DB_PASSWORD=mypassword
-      - DB_NAME=mydatabase
-    ports:
-      - "3000:3000"
-    depends_on:
-      - postgres
-    volumes:
-      - .:/app
-      - image_storage:/app/images
+    api:
+        build: .
+        container_name: api-shopper-gemini-container
+        environment:
+            - GEMINI_API_KEY=${GEMINI_API_KEY}
+            - DB_HOST=postgres
+            - DB_USER=myuser
+            - DB_PASSWORD=mypassword
+            - DB_NAME=mydatabase
+        ports:
+            - '3000:3000'
+        depends_on:
+            - postgres
+        volumes:
+            - .:/app
+            - image_storage:/app/images
 
 volumes:
-  postgres_data:
-  image_storage:
+    postgres_data:
+    image_storage:

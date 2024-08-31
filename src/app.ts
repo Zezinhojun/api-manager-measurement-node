@@ -6,7 +6,7 @@ export const createApp = () => {
     const app = express();
     app.use(json());
     app.use('/files', express.static('images'));
-    app.use("/", router);
+    app.use('/', router);
 
     return app;
 };

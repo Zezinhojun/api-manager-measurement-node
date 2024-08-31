@@ -1,7 +1,12 @@
 import request from 'supertest';
 import express, { json, Request, Response } from 'express';
 
-export const setupApp = (middleware: any, route: string, method: 'get' | 'post', handler: (req: Request, res: Response) => void) => {
+export const setupApp = (
+    middleware: any,
+    route: string,
+    method: 'get' | 'post',
+    handler: (req: Request, res: Response) => void
+) => {
     const app = express();
     app.use(json());
     app[method](route, middleware(), handler);
@@ -12,7 +17,7 @@ export const assertErrorResponse = async (
     app: express.Express,
     url: string,
     expectedError: object,
-    method: "get" | "post",
+    method: 'get' | 'post',
     sendData?: object
 ): Promise<void> => {
     const response = await request(app)[method](url).send(sendData);
@@ -24,7 +29,7 @@ export const assertErrorResponse = async (
 export const createAssertErrorResponse = (
     app: express.Express,
     url: string,
-    method: "get" | "post"
+    method: 'get' | 'post'
 ) => {
     return async (expectedError: object, sendData?: object): Promise<void> => {
         let response;

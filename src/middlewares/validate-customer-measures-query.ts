@@ -7,10 +7,11 @@ import { MeasureType } from '../utils/measure-types';
 export const validateCustomerMeasuresQuery = () => {
     return [
         param('customer_code')
-            .notEmpty().withMessage('Código do cliente não fornecido.'),
+            .notEmpty()
+            .withMessage('Código do cliente não fornecido.'),
         query('measure_type')
             .optional()
-            .custom(value => {
+            .custom((value) => {
                 if (value) {
                     const measureType = value.toUpperCase() as MeasureType;
                     if (!Object.values(MeasureType).includes(measureType)) {
@@ -24,13 +25,15 @@ export const validateCustomerMeasuresQuery = () => {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 const error = errors.array()[0];
-                const httpResponse = new BadRequestResponse("INVALID_DATA", error.msg)
-                return res.status(httpResponse.statusCode).json(httpResponse.body);
+                const httpResponse = new BadRequestResponse(
+                    'INVALID_DATA',
+                    error.msg
+                );
+                return res
+                    .status(httpResponse.statusCode)
+                    .json(httpResponse.body);
             }
             next();
-        }
-    ]
-
-}
-
-
+        },
+    ];
+};

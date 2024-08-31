@@ -1,4 +1,4 @@
-import { MeasureType } from "../utils/measure-types";
+import { MeasureType } from '../utils/measure-types';
 
 export interface IMeasure {
     id: string;

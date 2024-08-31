@@ -11,6 +11,7 @@ const config: Config = {
     transform: {
         '^.+\\.ts?$': 'ts-jest',
     },
+    setupFilesAfterEnv: ['./jest.setup.ts'], // Atualizado para setupFilesAfterEnv
 
     verbose: true,
 };

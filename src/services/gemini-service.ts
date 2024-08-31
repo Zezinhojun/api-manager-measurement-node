@@ -2,7 +2,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
 import path from 'path';
 
-const generativeAIClient = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
+const generativeAIClient = new GoogleGenerativeAI(
+    process.env.GEMINI_API_KEY ?? ''
+);
 const imageStorageDirectory = path.join('/app/images');
 
 function createGenerativeAIInput(base64: string, mimeType: string) {
@@ -21,10 +23,15 @@ function stripBase64Prefix(base64Image: string) {
 
 export async function processImage(base64: string) {
     try {
-        const model = generativeAIClient.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = "retornar o valor da conta no seguinte formato: integer ou number,";
+        const model = generativeAIClient.getGenerativeModel({
+            model: 'gemini-1.5-flash',
+        });
+        const prompt =
+            'retornar o valor da conta no seguinte formato: integer ou number,';
         const base64WithoutPrefix = stripBase64Prefix(base64);
-        const imageParts = [createGenerativeAIInput(base64WithoutPrefix, "image/jpeg")];
+        const imageParts = [
+            createGenerativeAIInput(base64WithoutPrefix, 'image/jpeg'),
+        ];
         const result = await model.generateContent([prompt, ...imageParts]);
         const response = result.response;
         const text = response.text();
@@ -37,7 +44,10 @@ export async function processImage(base64: string) {
     }
 }
 
-async function saveImage(base64Image: string, imageFilename: string): Promise<string> {
+async function saveImage(
+    base64Image: string,
+    imageFilename: string
+): Promise<string> {
     const imageBuffer = Buffer.from(base64Image, 'base64');
     const imagePath = path.join(imageStorageDirectory, imageFilename);
     await fs.promises.mkdir(path.dirname(imagePath), { recursive: true });

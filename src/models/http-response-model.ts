@@ -4,6 +4,6 @@ export abstract class HttpResponse {
 
     constructor(statusCode: number, body: any) {
         this.statusCode = statusCode;
-        this.body = body
+        this.body = body;
     }
 }

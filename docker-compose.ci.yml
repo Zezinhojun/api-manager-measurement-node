@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+    test:
+        build: .
+        container_name: api-shopper-gemini-test-container
+        environment:
+            - GEMINI_API_KEY=${GEMINI_API_KEY}
+            - DB_HOST=postgres
+            - DB_USER=myuser
+            - DB_PASSWORD=mypassword
+            - DB_NAME=mydatabase
+        command: npm test
+        depends_on:
+            - postgres
+        volumes:
+            - .:/app
+            - image_storage:/app/images

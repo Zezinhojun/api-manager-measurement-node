@@ -1,10 +1,10 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "CommonJS",
-    "outDir": "images/dist",
-    "strict": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-  }
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "CommonJS",
+        "outDir": "images/dist",
+        "strict": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true
+    }
 }
