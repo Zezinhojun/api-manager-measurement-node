@@ -11,10 +11,10 @@ import { processImage } from '../../src/services/gemini-service';
 import { customerCode, measureCreateData } from '../mocks/mockMeasure-data';
 
 jest.mock('../../src/services/gemini-service', () => ({
-    run: jest.fn()
+    processImage: jest.fn()
 }));
 
-const mockRun = processImage as jest.MockedFunction<typeof processImage>;
+const mockProcessImage = processImage as jest.MockedFunction<typeof processImage>;
 
 describe('MeasureService - service', () => {
     let measureService: MeasureService;
@@ -30,7 +30,7 @@ describe('MeasureService - service', () => {
         jest.spyOn(mockCustomerService, 'getCustomerByCode').mockResolvedValue({ statusCode: 404 });
         jest.spyOn(mockCustomerService, 'createCustomer').mockResolvedValue({ statusCode: 200 });
         jest.spyOn(mockMeasureRepository, 'findMeasuresByCustomerCode').mockResolvedValue([]);
-        mockRun.mockResolvedValue({ imageUrl: 'http://localhost:3000/files/image_123456789.jpg', text: '10' });
+        mockProcessImage.mockResolvedValue({ imageUrl: 'http://localhost:3000/files/image_123456789.jpg', text: '10' });
         jest.spyOn(mockMeasureRepository, 'createMeasure').mockResolvedValue({ id: '1', image_url: 'http://localhost:3000/files/image_123456789.jpg' });
 
         const response = await measureService.registerMeasure(measureCreateData);
@@ -46,7 +46,7 @@ describe('MeasureService - service', () => {
         expect(mockCustomerService.getCustomerByCode).toHaveBeenCalledWith(measureCreateData.customer_code);
         expect(mockCustomerService.createCustomer).toHaveBeenCalledWith({ customer_code: measureCreateData.customer_code });
         expect(mockMeasureRepository.findMeasuresByCustomerCode).toHaveBeenCalledWith(measureCreateData.customer_code);
-        expect(mockRun).toHaveBeenCalledWith(measureCreateData.image);
+        expect(mockProcessImage).toHaveBeenCalledWith(measureCreateData.image);
         expect(mockMeasureRepository.createMeasure).toHaveBeenCalledWith({
             customer_code: measureCreateData.customer_code,
             measure_datetime: new Date(measureCreateData.measure_datetime),
@@ -79,7 +79,7 @@ describe('MeasureService - service', () => {
         mockMeasureRepository.findMeasuresByCustomerCode.mockResolvedValue([
             { measure_datetime: new Date('2024-08-30T00:00:00Z'), measure_type: MeasureType.GAS }
         ]);
-        mockRun.mockResolvedValue({ imageUrl: 'http://localhost:3000/files/image_123456789.jpg', text: '10' });
+        mockProcessImage.mockResolvedValue({ imageUrl: 'http://localhost:3000/files/image_123456789.jpg', text: '10' });
 
         const response = await measureService.registerMeasure(measureCreateData);
 
