@@ -25,7 +25,7 @@ __export(bad_request_response_exports, {
 module.exports = __toCommonJS(bad_request_response_exports);
 
 // src/models/http-response-model.ts
-var HttpResponseBase = class {
+var HttpResponse = class {
   statusCode;
   body;
   constructor(statusCode, body) {
@@ -35,7 +35,7 @@ var HttpResponseBase = class {
 };
 
 // src/utils/http-responses/bad-request-response.ts
-var BadRequestResponse = class extends HttpResponseBase {
+var BadRequestResponse = class extends HttpResponse {
   constructor(errorCode, errorDescription) {
     super(400, { error_code: errorCode, error_description: errorDescription });
   }

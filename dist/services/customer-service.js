@@ -25,7 +25,7 @@ __export(customer_service_exports, {
 module.exports = __toCommonJS(customer_service_exports);
 
 // src/models/http-response-model.ts
-var HttpResponseBase = class {
+var HttpResponse = class {
   statusCode;
   body;
   constructor(statusCode, body) {
@@ -35,14 +35,14 @@ var HttpResponseBase = class {
 };
 
 // src/utils/http-responses/not-found-response.ts
-var NotFoundResponse = class extends HttpResponseBase {
+var NotFoundResponse = class extends HttpResponse {
   constructor(errorCode, errorDescription) {
     super(404, { code: errorCode, description: errorDescription });
   }
 };
 
 // src/utils/http-responses/ok-response.ts
-var OkResponse = class extends HttpResponseBase {
+var OkResponse = class extends HttpResponse {
   constructor(message, data) {
     super(200, { message, data });
   }

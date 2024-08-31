@@ -25,7 +25,7 @@ __export(no_content_response_exports, {
 module.exports = __toCommonJS(no_content_response_exports);
 
 // src/models/http-response-model.ts
-var HttpResponseBase = class {
+var HttpResponse = class {
   statusCode;
   body;
   constructor(statusCode, body) {
@@ -35,7 +35,7 @@ var HttpResponseBase = class {
 };
 
 // src/utils/http-responses/no-content-response.ts
-var NoContentResponse = class extends HttpResponseBase {
+var NoContentResponse = class extends HttpResponse {
   constructor() {
     super(204, null);
   }

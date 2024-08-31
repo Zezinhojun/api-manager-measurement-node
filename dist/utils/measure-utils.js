@@ -24,14 +24,14 @@ __export(measure_utils_exports, {
 });
 module.exports = __toCommonJS(measure_utils_exports);
 var MeasureUtils = class {
-  static hasDuplicateMeasurementInCurrentMonth(measurements, targetDate, targetType) {
-    const targetMonth = targetDate.getMonth() + 1;
-    const targetYear = targetDate.getFullYear();
+  static hasDuplicateForDate(measurements, targetDate, targetType) {
+    const monthOfTargetDate = targetDate.getMonth() + 1;
+    const yearOfTargetDate = targetDate.getFullYear();
     return measurements.some((measurement) => {
-      const measurementDate = new Date(measurement.measure_datetime);
-      const measurementMonth = measurementDate.getMonth() + 1;
-      const measurementYear = measurementDate.getFullYear();
-      return measurementMonth === targetMonth && measurementYear === targetYear && measurement.measure_type === targetType;
+      const dateOfMeasurement = new Date(measurement.measure_datetime);
+      const monthOfMeasurementDate = dateOfMeasurement.getMonth() + 1;
+      const yearOfMeasurementDate = dateOfMeasurement.getFullYear();
+      return monthOfMeasurementDate === monthOfTargetDate && yearOfMeasurementDate === yearOfTargetDate && measurement.measure_type === targetType;
     });
   }
 };
